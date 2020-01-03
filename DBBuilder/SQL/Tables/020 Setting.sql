@@ -8,11 +8,14 @@
 
 INSERT INTO Setting ([Name], [Value], DefaultValue, [Description], UserCanEdit) 
 VALUES	/* Application Values - Non configurable */
-		('APPLICATION_NAME', 'MyWorkTracker', 'MyWorkTracker', 'The name of the Application', 'N'),
+		('APPLICATION_NAME', 'My PA', 'My PA', 'The name of the Application', 'N'),
 		('APPLICATION_VERSION', '0.3.1', '0.3.1', 'The version number of the Application', 'N'),
 
 		/* Application Values - Configurable */
-		('APPLICATION_WINDOW_COORDS', '100,0,750,750', '100,0,750,750', 'The window''s location and size (left, top, width, height)', 'Y'),
+		('APPLICATION_POSITION_LEFT', '100', '100', 'The window''s location (left)', 'Y'),
+		('APPLICATION_POSITION_TOP', '0', '0', 'The window''s location (top)', 'Y'),
+		('APPLICATION_WIDTH', '600', '600', 'The window''s size (width)', 'Y'),
+		('APPLICATION_HEIGHT', '750', '750', 'The window''s size (height)', 'Y'),
 		('SAVE_WINDOW_COORDS_ON_EXIT', '1', '1', 'Should the window''s location and size be saved when the application exits?', 'Y'),
 		('LOAD_STALE_DAYS', '100', '100', 'Load Work Items that were completed this many days ago.', 'Y'),
 
