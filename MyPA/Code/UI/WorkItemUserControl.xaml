@@ -25,8 +25,8 @@
             <!-- Top section: Overview. A GUI showing the current active tasks in a pretty presentation -->
             <TabControl x:Name="WorkItemTabs" Grid.Row="0">
                 <TabItem Header="Active">
-                    <ListBox Name="OverviewListBox" ItemsSource="{Binding ActiveWorkItems}" IsEnabled="{Binding IsApplicationNotInAddMode}"
-                                     SelectedItem="{Binding SelectedWorkItem}"
+                    <ListBox Name="OverviewListBox" 
+                             ItemsSource="{Binding ActiveWorkItems}" IsEnabled="{Binding IsApplicationNotInAddMode}" SelectedItem="{Binding SelectedWorkItem}"
                               Grid.Row="0" SelectionMode="Single" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                         <!-- TODO: Does not work. Attempting to colour the background when the control is disabled
                                 <ListBox.Style>
@@ -104,9 +104,9 @@
                             GotFocus="ControlGainsFocus" LostFocus="ControlLosesFocus" />
                     <TextBlock 
                         Padding="5,5,5,5" VerticalAlignment="Center">Due Date:</TextBlock>
-                        <Button Name="DueDateButton" 
+                        <!--<Button Name="DueDateButton" 
                             Content="{Binding SelectedWorkItem.DueDate, StringFormat=\{0:ddd dd/MM HH:mm\}}" 
-                            Padding="5" Margin="5" />
+                            Padding="5" Margin="5" />-->
                         <TextBlock Name="DueInDaysTextField" 
                              Padding="5,5,5,5" VerticalAlignment="Center" Background="LightYellow" Width="200" />
                 </StackPanel>
@@ -143,6 +143,7 @@
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="Auto" />
                                                 <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="Auto" />
                                             </Grid.ColumnDefinitions>
                                             <Grid.RowDefinitions>
                                                 <RowDefinition Height="Auto" />
@@ -153,10 +154,14 @@
                                                         Grid.Column="0" Grid.Row="0" Foreground="Gray" />
                                             <TextBlock Text="{Binding SelectedWorkItem.WorkItemID}" 
                                                         Grid.Column="1" Grid.Row="0" Foreground="Gray" Margin="5,0,0,0"/>
+                                            
                                             <TextBlock Text="Created:" 
                                                         Grid.Column="0" Grid.Row="1" Foreground="Gray" />
                                             <TextBlock Text="{Binding SelectedWorkItem.CreationDateTime, StringFormat=\{0:ddd dd/MM HH:mm\}}" 
                                                         Grid.Column="1" Grid.Row="1" Foreground="Gray" Margin="5,0,0,0"/>
+                                            <TextBlock Text="{Binding SelectedWorkItem.DaysSinceCreation}" 
+                                                        Grid.Column="2" Grid.Row="1" Foreground="Gray" Margin="5,0,0,0"/>
+                                            
                                             <TextBlock Text="Modified:" 
                                                         Grid.Column="0" Grid.Row="2" Foreground="Gray" />
                                             <TextBlock Text="{Binding SelectedWorkItem.ModificationDateTime, 
@@ -173,16 +178,18 @@
                 </TabControl>
 
                 <!-- Bottom row -->
-                <StackPanel Grid.Column="0" Grid.Row="2" Orientation="Horizontal">
+                <StackPanel Grid.Column="0" Grid.Row="2" Orientation="Horizontal"
+                             Visibility="{Binding IsWorkItemSelected, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <TextBlock Text="Progress:" Margin="5" VerticalAlignment="Center" />
                     <Slider x:Name="WorkItemProgressSlider" 
+                           Value="{Binding SelectedWorkItemCompletion}"
                                 TickFrequency="10" TickPlacement="BottomRight" Margin="5" VerticalAlignment="Center"
                                 IsSnapToTickEnabled="False" IsMoveToPointEnabled="True"
                                 Minimum="0" Maximum="100" Width="120" />
                     <TextBlock Padding="5,5,5,5" VerticalAlignment="Center">Status</TextBlock>
                     <ComboBox Name="WorkItemStatusComboBox" 
-                                      ItemsSource="{Binding WorkItemStatuses}" 
-                                      DisplayMemberPath="StatusLabel" SelectedValuePath="StatusLabel"
+                              ItemsSource="{Binding WorkItemStatuses}" DisplayMemberPath="StatusLabel"
+                              SelectedItem="{Binding SelectedWorkItemStatus}"
                               VerticalAlignment="Center"
                               IsEditable="False" 
                               Margin="5" MinWidth="80" />

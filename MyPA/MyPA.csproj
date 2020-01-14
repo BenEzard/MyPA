@@ -89,6 +89,9 @@
     <Compile Include="Code\ApplicationMode.cs" />
     <Compile Include="Code\ApplicationViewModel.cs" />
     <Compile Include="Code\BaseViewModel.cs" />
+    <Compile Include="Code\Data\Models\BaseDBObject.cs" />
+    <Compile Include="Code\Data\Models\BaseWorkItem.cs" />
+    <Compile Include="Code\Data\Models\DBActionRequired.cs" />
     <Compile Include="Code\Data\Models\WorkItem.cs" />
     <Compile Include="Code\Data\Models\WorkItemDueDate.cs" />
     <Compile Include="Code\Data\Models\WorkItemStatus.cs" />

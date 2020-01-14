@@ -22,7 +22,23 @@ namespace MyPA.Code
         /// </summary>
         public ObservableCollection<WorkItem> ActiveWorkItems { get; set;} = new ObservableCollection<WorkItem>();
 
+        /// <summary>
+        /// A list of all WorkItemStatuses.
+        /// This is to populate the UI, and is NOT related to any particular WorkItem.
+        /// </summary>
         public List<WorkItemStatus> WorkItemStatuses { get; set; }
+
+        private WorkItemStatus GetWorkItemStatus(int id)
+        {
+            WorkItemStatus rValue = null;
+            foreach (WorkItemStatus wis in WorkItemStatuses)
+            {
+                if (wis.WorkItemStatusID == id)
+                    rValue = wis;
+            }
+            return rValue;
+        }
+
 
         private WorkItem _selectedWorkItem = null;
         /// <summary>
@@ -32,13 +48,62 @@ namespace MyPA.Code
         {
             get { return _selectedWorkItem; }
             set { 
-                _selectedWorkItem = value; 
-                OnPropertyChanged(""); 
+                _selectedWorkItem = value;
+                _selectedWorkItemStatus = GetWorkItemStatus(_selectedWorkItem.CurrentWorkItemStatusEntry.WorkItemStatusID);
+                OnPropertyChanged("");
+                Console.WriteLine($"Selection made {_selectedWorkItem.Title}, has a WorkItemStatus of {_selectedWorkItem.CurrentWorkItemStatusEntry.WorkItemStatusID}");
             }
         }
-        
+
+        /// <summary>
+        /// Returns true if a WorkItem has been selected; otherwise false
+        /// </summary>
+        public bool IsWorkItemSelected
+        {
+            get
+            {
+                if (_selectedWorkItem == null)
+                    return false;
+                else
+                    return true;
+            }
+        }
+
+        private int _selectedWorkItemCompletion;
+        public int SelectedWorkItemCompletion
+        {
+            get
+            {
+                return _selectedWorkItemCompletion;
+            }
+            set
+            {
+                _selectedWorkItemCompletion = value;
+                var wise = new WorkItemStatusEntry(_selectedWorkItem.WorkItemID.Value, _selectedWorkItemStatus.WorkItemStatusID, _selectedWorkItemCompletion);
+                workItemRepository.InsertWorkItemStatusEntry(wise);
+                _selectedWorkItem.CurrentWorkItemStatusEntry = wise;
+                OnPropertyChanged("");
+                Console.WriteLine($"Completion amount changed {value}");
+            }
+        }
+
+        private WorkItemStatus _selectedWorkItemStatus;
+        public WorkItemStatus SelectedWorkItemStatus
+        {
+            get
+            {
+                return _selectedWorkItemStatus;
+            }
+            set {
+                ChangeWorkItemStatus(_selectedWorkItemStatus, value);
+                OnPropertyChanged("");
+            }
+        }
+
         public WorkItemViewModel()
         {
+            ApplicationViewModel appViewModel = new ApplicationViewModel();
+
             LoadWorkItems();
             LoadWorkItemStatuses();
             Console.WriteLine($"number of list items = {ActiveWorkItems.Count}");
@@ -56,6 +121,33 @@ namespace MyPA.Code
             {
                 ActiveWorkItems.Add(wi);
             }
+        }
+
+        /// <summary>
+        /// Change the WorkItemStatus.
+        /// Note that the SelectedItem implementation on the ComboBox doesn't fire unless there has been a change. 
+        ///     (i.e. the same object being selected again doesn't change it.)
+        /// </summary>
+        /// <param name="oldValue"></param>
+        /// <param name="newValue"></param>
+        private void ChangeWorkItemStatus(WorkItemStatus oldValue, WorkItemStatus newValue)
+        {
+            // If the old value is a Closed status and the new value is an opened status, then set completion amount to X
+            if ((oldValue.IsConsideredActive == false) && (newValue.IsConsideredActive == true)) {
+                _selectedWorkItemCompletion = 50; // TODO replace this with setting
+            }
+
+            // If it is changed to the default closed status, then set completion to 100%
+            if ((newValue.IsConsideredActive == false) && (newValue.IsDefault == true))
+            {
+                _selectedWorkItemCompletion = 100;
+            }
+
+            var wise = new WorkItemStatusEntry(_selectedWorkItem.WorkItemID.Value, newValue.WorkItemStatusID, SelectedWorkItemCompletion);
+            workItemRepository.InsertWorkItemStatusEntry(wise);
+            _selectedWorkItem.CurrentWorkItemStatusEntry = wise;
+            _selectedWorkItemStatus = newValue;
+
         }
 
         public void LoadWorkItemStatuses()

@@ -55,13 +55,14 @@ namespace MyPA.Code.Data.Services
                                     wiseModificationDateTime = DateTime.Parse(reader["wisModificationDateTime"].ToString());
 
                                 WorkItemStatusEntry wise = new WorkItemStatusEntry();
-                                wise.WorkItemStatusEntryId = Convert.ToInt32(reader["WorkItemStatusEntry_ID"]);
-                                wise.WorkItemId = workItemID;
-                                wise.WorkItemStatusId = Convert.ToInt32(reader["WorkItemStatus_ID"]);
+                                wise.WorkItemStatusEntryID = Convert.ToInt32(reader["WorkItemStatusEntry_ID"]);
+                                wise.WorkItemID = workItemID;
+                                wise.WorkItemStatusID = Convert.ToInt32(reader["WorkItemStatus_ID"]);
                                 wise.CompletionAmount = Convert.ToInt32(reader["CompletionAmount"]);
                                 wise.CreationDateTime = DateTime.Parse(reader["wisCreationDateTime"].ToString()); ;
                                 wise.ModificationDateTime = wiseModificationDateTime;
-                                workItem.WorkItemStatusEntries.Add(wise);
+                            Console.WriteLine($"Loading {workItem.Title}, the current status is {wise.WorkItemStatusID}");
+                                workItem.CurrentWorkItemStatusEntry = wise;
 
                                 /*                                
                                 if (reader["DueDateTime"] != DBNull.Value)
@@ -137,6 +138,41 @@ namespace MyPA.Code.Data.Services
             }
 
             return rValue;
+        }
+
+        /// <summary>
+        /// Inserts a database record for a WorkItemStatus.
+        /// CompletionAmount is automatically set to 0.
+        /// </summary>
+        /// <param name="wise"></param>
+        /// <returns>Returns the WorkItemStatusEntry ID on insert, or -1</returns>
+        public int InsertWorkItemStatusEntry(WorkItemStatusEntry wise)
+        {
+            int workItemStatusID = -1;
+            using (var connection = new SQLiteConnection(dbConnectionString))
+            {
+                using (var cmd = new SQLiteCommand(connection))
+                {
+                    connection.Open();
+                    cmd.CommandText = "INSERT INTO WorkItemStatusEntry (WorkItem_ID, WorkItemStatus_ID, CompletionAmount, CreationDateTime) " +
+                        "VALUES (@workItemID, @statusID, @completionAmount, @creation)";
+                    cmd.Parameters.AddWithValue("@workItemID", wise.WorkItemID);
+                    cmd.Parameters.AddWithValue("@statusID", wise.WorkItemStatusID);
+                    cmd.Parameters.AddWithValue("@completionAmount", wise.CompletionAmount);
+                    cmd.Parameters.AddWithValue("@creation", wise.CreationDateTime);
+                    cmd.ExecuteNonQuery();
+
+                    // Get the identity value
+                    cmd.CommandText = "SELECT last_insert_rowid()";
+                    workItemStatusID = (int)(Int64)cmd.ExecuteScalar();
+                    wise.WorkItemStatusEntryID = workItemStatusID;
+
+                    wise.PendingDBOperation = DBActionRequired.NONE;
+                }
+                connection.Close();
+                Console.WriteLine("Inserted a new WorkItemStatusEntry");
+            }
+            return workItemStatusID;
         }
     }
 }

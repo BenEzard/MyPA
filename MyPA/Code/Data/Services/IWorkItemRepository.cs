@@ -16,5 +16,7 @@ namespace MyPA.Code.Data.Services
         /// </summary>
         /// <returns></returns>
         List<WorkItemStatus> GetWorkItemStatuses();
+
+        int InsertWorkItemStatusEntry(WorkItemStatusEntry wise);
     }
 }

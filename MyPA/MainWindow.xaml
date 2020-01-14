@@ -39,6 +39,13 @@
             </ToolBar>
         </ToolBarTray>
 
-            <WorkItemTabControl:WorkItemUserControl />
+        <WorkItemTabControl:WorkItemUserControl />
+        <!--<WorkItemTabControl:WorkItemUserControl>
+            <ObjectDataProvider>
+                <ObjectDataProvider.ConstructorParameters>
+                    <lo<local:ApplicationViewModel />
+                </ObjectDataProvider.ConstructorParameters>
+            </ObjectDataProvider>
+        </WorkItemTabControl:WorkItemUserControl>-->
     </DockPanel>
 </Window>

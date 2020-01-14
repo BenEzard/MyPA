@@ -1,25 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace MyPA.Code.Data.Models
 {
-    public class WorkItem
+    public class WorkItem : BaseWorkItem
     {
-        public int? WorkItemID { get; set; }
-        public string Title { get; set; }
-        public string Description { get; set; }
+        private WorkItemStatusEntry _currentWISE;
 
-        /// <summary>
-        /// A list of all associated WorkItemStatusEntries in reverse chronological order (newest is [0], oldest is [size-1])
-        /// 
-        /// </summary>
-        public List<WorkItemStatusEntry> WorkItemStatusEntries = new List<WorkItemStatusEntry>(1);
 
-        /// <summary>
-        /// Flag to show whether or not all WorkItemStatusEntries have been loaded into the list.
-        /// Should only be set from TODO.
-        /// </summary>
-        public bool AllWorkItemStatusEntriesLoaded { get; private set; }
 
         /// <summary>
         /// Get the Current WorkItemStatusEntry.
@@ -28,14 +15,21 @@ namespace MyPA.Code.Data.Models
         {
             get
             {
-                return WorkItemStatusEntries[0];
+                return _currentWISE;
+            }
+            set
+            {
+                _currentWISE = value;
             }
         }
 
-        public DateTime CreationDateTime { get; set; }
-        public DateTime? ModificationDateTime { get; set; }
-        public DateTime? DeletionDateTime { get; set; }
 
-        //public WorkItemStatusHistory CurrentStatus { get;set; }
+        public double DaysSinceCreation { 
+            get
+            {
+                return (DateTime.Now - CreationDateTime).TotalDays;
+            }
+        }
+
     }
 }
