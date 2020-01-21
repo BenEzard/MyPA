@@ -97,6 +97,11 @@ namespace MyPA.Code.Data.Services
             return rValue;
         }
 
+        Dictionary<PreferenceName, Preference> IWorkItemRepository.GetWorkItemPreferences()
+        {
+            return this.GetPreferences("WorkItem");
+        }
+
         public void AddWorkItem(WorkItem workItem)
         {
         }

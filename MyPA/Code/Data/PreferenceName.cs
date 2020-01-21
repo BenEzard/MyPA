@@ -17,7 +17,7 @@
         APPLICATION_HEIGHT,
         SAVE_WINDOW_COORDS_ON_EXIT,
         LOAD_STALE_DAYS, /* Load this number of days-old inactive Work Items */
-        STATUS_ACTIVE_TO_COMPLETE_PCN,
+        STATUS_COMPLETE_TO_ACTIVE,
         JOURNAL_ORDERING,
 
         DATA_EXPORT_AUTOMATICALLY,

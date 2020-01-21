@@ -20,7 +20,7 @@
         <!-- Toolbar -->
         <ToolBarTray DockPanel.Dock="Top" Margin="0" Background="AliceBlue">
             <ToolBar>
-                <Button Name="NewWorkItemButton" Command="{Binding WorkitemCreatingCommand}"
+                <Button Name="NewWorkItemButton" Command="{Binding WorkItemCreatingCommand}"
                         VerticalAlignment="Bottom">
                     <StackPanel Orientation="Horizontal">
                         <Image Source="Images\report_add.png" Width="26" ToolTip="New Work Item">

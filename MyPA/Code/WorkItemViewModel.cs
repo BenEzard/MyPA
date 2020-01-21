@@ -14,13 +14,13 @@ namespace MyPA.Code
         /// <summary>
         /// The Repository handles all of the data collection; editing and deleting methods.
         /// </summary>
-        private WorkItemRepository workItemRepository = new WorkItemRepository();
+        private IWorkItemRepository workItemRepository = new WorkItemRepository();
 
         /// <summary>
         /// An ObservableCollection of all 'active' WorkItems.
         /// (Potentially this will change to be all work items, if I can work out how to filter the data well).
         /// </summary>
-        public ObservableCollection<WorkItem> ActiveWorkItems { get; set;} = new ObservableCollection<WorkItem>();
+        public ObservableCollection<WorkItem> ActiveWorkItems { get; set; } = new ObservableCollection<WorkItem>();
 
         /// <summary>
         /// A list of all WorkItemStatuses.
@@ -47,7 +47,8 @@ namespace MyPA.Code
         public WorkItem SelectedWorkItem
         {
             get { return _selectedWorkItem; }
-            set { 
+            set
+            {
                 _selectedWorkItem = value;
                 _selectedWorkItemStatus = GetWorkItemStatus(_selectedWorkItem.CurrentWorkItemStatusEntry.WorkItemStatusID);
                 OnPropertyChanged("");
@@ -94,7 +95,8 @@ namespace MyPA.Code
             {
                 return _selectedWorkItemStatus;
             }
-            set {
+            set
+            {
                 ChangeWorkItemStatus(_selectedWorkItemStatus, value);
                 OnPropertyChanged("");
             }
@@ -103,6 +105,9 @@ namespace MyPA.Code
         public WorkItemViewModel()
         {
             ApplicationViewModel appViewModel = new ApplicationViewModel();
+
+            // Load Preferences
+            Preferences = workItemRepository.GetWorkItemPreferences();
 
             LoadWorkItems();
             LoadWorkItemStatuses();
@@ -115,9 +120,7 @@ namespace MyPA.Code
         /// </summary>
         private void LoadWorkItems()
         {
-            // TODO remove hardcoding in below
-            var list = workItemRepository.GetWorkItems(10);
-            foreach (WorkItem wi in list)
+            foreach (WorkItem wi in workItemRepository.GetWorkItems(GetAppPreferenceValueAsInt(PreferenceName.LOAD_STALE_DAYS)))
             {
                 ActiveWorkItems.Add(wi);
             }
@@ -133,8 +136,9 @@ namespace MyPA.Code
         private void ChangeWorkItemStatus(WorkItemStatus oldValue, WorkItemStatus newValue)
         {
             // If the old value is a Closed status and the new value is an opened status, then set completion amount to X
-            if ((oldValue.IsConsideredActive == false) && (newValue.IsConsideredActive == true)) {
-                _selectedWorkItemCompletion = 50; // TODO replace this with setting
+            if ((oldValue.IsConsideredActive == false) && (newValue.IsConsideredActive == true))
+            {
+                _selectedWorkItemCompletion = GetAppPreferenceValueAsInt(PreferenceName.STATUS_COMPLETE_TO_ACTIVE);
             }
 
             // If it is changed to the default closed status, then set completion to 100%
@@ -178,7 +182,7 @@ namespace MyPA.Code
 
                 if (_appMode == ApplicationMode.ADD_MODE)
                     rValue = true;
-                
+
                 return rValue;
             }
         }
@@ -199,19 +203,20 @@ namespace MyPA.Code
 
         public /*async*/ void AddWorkItem(WorkItem workItem)
         {
-            /*await*/ workItemRepository.AddWorkItem(workItem);
+            /*await*/
+            workItemRepository.AddWorkItem(workItem);
             ActiveWorkItems.Add(workItem);
         }
 
-/*        public async void SaveWorkItem()
-        {
-            if (SelectedWorkItem.WorkItemId == null)
-                AddWorkItem(SelectedWorkItem);
-            else 
-                await workItemRepository.UpdateWorkItemAsync(SelectedWorkItem);
-        }*/
+        /*        public async void SaveWorkItem()
+                {
+                    if (SelectedWorkItem.WorkItemId == null)
+                        AddWorkItem(SelectedWorkItem);
+                    else 
+                        await workItemRepository.UpdateWorkItemAsync(SelectedWorkItem);
+                }*/
 
-//        public event EventHandler<WorkItemEventArgs> WorkItemCreatingEvent;
+        //        public event EventHandler<WorkItemEventArgs> WorkItemCreatingEvent;
 
         #region WorkItemCreatingCommand
         RelayCommand _workItemCreatingCommand;
@@ -235,7 +240,7 @@ namespace MyPA.Code
             var wi = new WorkItem();
             SelectedWorkItem = wi;
             Console.WriteLine("inside BeginWorkItemCreation (2)");
-//            WorkItemCreatingEvent?.Invoke(this, new WorkItemEventArgs(WorkItemType.WORK_ITEM_CREATING, wi));
+            //            WorkItemCreatingEvent?.Invoke(this, new WorkItemEventArgs(WorkItemType.WORK_ITEM_CREATING, wi));
             Console.WriteLine("inside BeginWorkItemCreation (3)");
         }
 
@@ -247,7 +252,7 @@ namespace MyPA.Code
 
         #region CancelWorkItemCreatingCommand
         RelayCommand _workItemCamcelCreatingCommand;
-        public ICommand CancelWorkitemCreatingCommand
+        public ICommand CancelWorkItemCreatingCommand
         {
             get
             {
@@ -273,5 +278,4 @@ namespace MyPA.Code
         }
         #endregion
     }
-
 }

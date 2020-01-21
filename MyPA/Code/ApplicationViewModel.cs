@@ -1,32 +1,19 @@
 ﻿using MyPA.Code.Data.Services;
+using MyPA.Code.UI.Util;
+using System;
 using System.Collections.Generic;
+using System.Windows.Input;
 
 namespace MyPA.Code
 {
     public class ApplicationViewModel : BaseViewModel
     {
         private IApplicationRepository applicationRepository = new ApplicationRepository();
-        public Dictionary<PreferenceName, Preference> Preferences = null;
 
         public ApplicationViewModel()
         {
-            LoadApplicationPreferences();
-        }
-
-        public void LoadApplicationPreferences()
-        {
+            // Load Preferences
             Preferences = applicationRepository.GetApplicationPreferences();
-        }
-
-        /// <summary>
-        /// Return an Application Preference from the collection (in cache), as a string value.
-        /// </summary>
-        /// <param name="settingName"></param>
-        /// <returns></returns>
-        public string GetAppPreferenceValue(PreferenceName settingName)
-        {
-            Preferences.TryGetValue(settingName, out Preference rValue);
-            return rValue.Value;
         }
 
         public string ApplicationNameAndVersion
@@ -41,7 +28,7 @@ namespace MyPA.Code
         {
             get
             {
-                return int.Parse(GetAppPreferenceValue(PreferenceName.APPLICATION_WIDTH));
+                return GetAppPreferenceValueAsInt(PreferenceName.APPLICATION_WIDTH);
             }
         }
 
@@ -49,7 +36,7 @@ namespace MyPA.Code
         {
             get
             {
-                return int.Parse(GetAppPreferenceValue(PreferenceName.APPLICATION_HEIGHT));
+                return GetAppPreferenceValueAsInt(PreferenceName.APPLICATION_HEIGHT);
             }
         }
 
@@ -57,7 +44,7 @@ namespace MyPA.Code
         {
             get
             {
-                return int.Parse(GetAppPreferenceValue(PreferenceName.APPLICATION_POSITION_TOP));
+                return GetAppPreferenceValueAsInt(PreferenceName.APPLICATION_POSITION_TOP);
             }
         }
 
@@ -65,8 +52,70 @@ namespace MyPA.Code
         {
             get
             {
-                return int.Parse(GetAppPreferenceValue(PreferenceName.APPLICATION_POSITION_LEFT));
+                return GetAppPreferenceValueAsInt(PreferenceName.APPLICATION_POSITION_LEFT);
             }
         }
+
+        #region WorkItemCreatingCommand
+        RelayCommand _workItemCreatingCommand;
+        public ICommand WorkItemCreatingCommand
+        {
+            get
+            {
+                Console.WriteLine("in command");
+                if (_workItemCreatingCommand == null)
+                {
+                    _workItemCreatingCommand = new RelayCommand(BeginWorkItemCreation, CanAddNewWorkItem);
+                }
+                return _workItemCreatingCommand;
+            }
+        }
+
+        public void BeginWorkItemCreation()
+        {
+            Console.WriteLine("inside BeginWorkItemCreation (1)");
+       /*     AppMode = ApplicationMode.ADD_MODE;
+
+            var wi = new WorkItem();
+            SelectedWorkItem = wi;*/
+            Console.WriteLine("inside BeginWorkItemCreation (2)");
+            //            WorkItemCreatingEvent?.Invoke(this, new WorkItemEventArgs(WorkItemType.WORK_ITEM_CREATING, wi));
+            Console.WriteLine("inside BeginWorkItemCreation (3)");
+        }
+
+        public bool CanAddNewWorkItem()
+        {
+            return true;
+        }
+        #endregion
+
+        #region CancelWorkItemCreatingCommand
+        RelayCommand _workItemCamcelCreatingCommand;
+        public ICommand CancelWorkItemCreatingCommand
+        {
+            get
+            {
+                if (_workItemCamcelCreatingCommand == null)
+                {
+                    _workItemCamcelCreatingCommand = new RelayCommand(CancelWorkItemCreation, CanCancelNewWorkItem);
+                }
+                return _workItemCamcelCreatingCommand;
+            }
+        }
+
+        public void CancelWorkItemCreation()
+        {
+            //AppMode = ApplicationMode.EDIT_MODE;
+        }
+
+        public bool CanCancelNewWorkItem()
+        {
+            /* if (AppMode == ApplicationMode.ADD_MODE)
+                 return true;
+             else
+                 return false;*/
+            return true;
+        }
+        #endregion
     }
 }
