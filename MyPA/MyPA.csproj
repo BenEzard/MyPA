@@ -86,6 +86,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Code\AppAction.cs" />
     <Compile Include="Code\ApplicationMode.cs" />
     <Compile Include="Code\ApplicationViewModel.cs" />
     <Compile Include="Code\BaseViewModel.cs" />
@@ -95,14 +96,16 @@
     <Compile Include="Code\Data\Models\WorkItem.cs" />
     <Compile Include="Code\Data\Models\WorkItemDueDate.cs" />
     <Compile Include="Code\Data\Models\WorkItemStatus.cs" />
-    <Compile Include="Code\Data\Models\WorkItemStatusEntry.cs" />
+    <Compile Include="Code\Data\Models\BaseWorkItemStatusEntry.cs" />
     <Compile Include="Code\Data\Models\Preference.cs" />
+    <Compile Include="Code\Data\Models\WorkItemStatusEntry.cs" />
     <Compile Include="Code\Data\PreferenceName.cs" />
     <Compile Include="Code\Data\Services\ApplicationRepository.cs" />
     <Compile Include="Code\Data\Services\BaseRepository.cs" />
     <Compile Include="Code\Data\Services\IApplicationRepository.cs" />
     <Compile Include="Code\Data\Services\IWorkItemRepository.cs" />
     <Compile Include="Code\Data\Services\WorkItemRepository.cs" />
+    <Compile Include="Code\Messenger.cs" />
     <Compile Include="Code\UI\Util\BooleanToVisibilityConverter.cs" />
     <Compile Include="Code\UI\Util\RelayCommand.cs" />
     <Compile Include="Code\UI\WorkItemUserControl.xaml.cs">

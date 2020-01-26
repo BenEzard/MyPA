@@ -49,19 +49,28 @@ namespace MyPA.Code.Data.Services
                                 if (reader["DeletionDateTime"].GetType() != typeof(DBNull))
                                     workItem.DeletionDateTime = DateTime.Parse(reader["DeletionDateTime"].ToString());
 
-                                // --- WorkItemStatus ----
-                                DateTime? wiseModificationDateTime = null;
-                                if (reader["wisModificationDateTime"] != DBNull.Value)
-                                    wiseModificationDateTime = DateTime.Parse(reader["wisModificationDateTime"].ToString());
-
+                                // --- WorkItemStatusEntry ----
                                 WorkItemStatusEntry wise = new WorkItemStatusEntry();
+            
+                                
+
                                 wise.WorkItemStatusEntryID = Convert.ToInt32(reader["WorkItemStatusEntry_ID"]);
                                 wise.WorkItemID = workItemID;
                                 wise.WorkItemStatusID = Convert.ToInt32(reader["WorkItemStatus_ID"]);
+                                wise.StatusLabel = (string)reader["wisStatusLabel"];
                                 wise.CompletionAmount = Convert.ToInt32(reader["CompletionAmount"]);
                                 wise.CreationDateTime = DateTime.Parse(reader["wisCreationDateTime"].ToString()); ;
+
+                                DateTime? wiseModificationDateTime = null;
+                                if (reader["wisModificationDateTime"] != DBNull.Value)
+                                    wiseModificationDateTime = DateTime.Parse(reader["wisModificationDateTime"].ToString()); 
                                 wise.ModificationDateTime = wiseModificationDateTime;
-                            Console.WriteLine($"Loading {workItem.Title}, the current status is {wise.WorkItemStatusID}");
+                                workItem.AddWorkItemStatusEntry(wise);
+
+                            //workItem.CompletionAmount = wise.CompletionAmount;
+
+
+Console.WriteLine($"Loading {workItem.Title}, the current status is {wise.WorkItemStatusID}");
                                 workItem.CurrentWorkItemStatusEntry = wise;
 
                                 /*                                
@@ -102,8 +111,73 @@ namespace MyPA.Code.Data.Services
             return this.GetPreferences("WorkItem");
         }
 
-        public void AddWorkItem(WorkItem workItem)
+        public int InsertWorkItem(WorkItem workItem)
         {
+            int workItemID = -1;
+            DateTime creation = DateTime.Now;
+            using (var connection = new SQLiteConnection(dbConnectionString))
+            {
+                using (var cmd = new SQLiteCommand(connection))
+                {
+                    connection.Open();
+                    cmd.CommandText = "INSERT INTO WorkItem (TaskTitle, TaskDescription, CreationDateTime) " +
+                        "VALUES (@title, @desc, @creation)";
+                    cmd.Parameters.AddWithValue("@title", workItem.Title);
+                    cmd.Parameters.AddWithValue("@desc", workItem.Description);
+                    cmd.Parameters.AddWithValue("@creation", creation);
+                    cmd.ExecuteNonQuery();
+
+                    workItem.CreationDateTime = creation;
+
+                    // Get the identity value (to return)
+                    cmd.CommandText = "SELECT last_insert_rowid()";
+                    workItemID = (int)(Int64)cmd.ExecuteScalar();
+                    workItem.WorkItemID = workItemID;
+/* TODO: NOT SURE IF THIS IS NEEDED NOW; MIGHT BE APPLIED ELSEWHERE?
+                    if (wi.WorkItemStatusEntry == null)
+                        wi.WorkItemStatusEntry = new WorkItemStatusEntry();
+
+                    wi.WorkItemStatusEntry.WorkItemID = workItemID; // <-- here
+
+                    // Save the Due Date
+                    if (wi.DueDate > DateTime.MinValue)
+                    {
+                        wi.Meta.DueDate_ID = InsertDBDueDate(wi, wi.DueDate, "Initial WorkItem created.");
+                    }
+
+                    if ((addWorkItemStatus) && (wi.WorkItemStatusEntry.WorkItemStatusEntryID == -1))
+                    {
+                        Console.WriteLine("InsertDBWorkItem()...InsertDBWorkItemStatusEntry");
+                        InsertDBWorkItemStatusEntry(wi.WorkItemStatusEntry);
+                    }*/
+                }
+                connection.Close();
+            }
+            return workItemID;
+        }
+
+        public void UpdateWorkItem(WorkItem workItem)
+        {
+            using (var connection = new SQLiteConnection(dbConnectionString))
+            {
+                using (var cmd = new SQLiteCommand(connection))
+                {
+                    connection.Open();
+                    cmd.CommandText = "UPDATE WorkItem " +
+                        "SET TaskTitle = @title, " +
+                        "TaskDescription = @desc, " +
+                        "ModificationDateTime = @modTime " +
+                        "WHERE WorkItem_ID = @workItemID " +
+                        "AND (TaskTitle <> @title " +
+                        "OR TaskDescription <> @desc)";
+                    cmd.Parameters.AddWithValue("@title", workItem.Title);
+                    cmd.Parameters.AddWithValue("@desc", workItem.Description);
+                    cmd.Parameters.AddWithValue("@workItemID", workItem.WorkItemID);
+                    cmd.Parameters.AddWithValue("@modTime", DateTime.Now);
+                    cmd.ExecuteNonQuery();
+                }
+                connection.Close();
+            }
         }
 
         /// <summary>
@@ -151,7 +225,7 @@ namespace MyPA.Code.Data.Services
         /// </summary>
         /// <param name="wise"></param>
         /// <returns>Returns the WorkItemStatusEntry ID on insert, or -1</returns>
-        public int InsertWorkItemStatusEntry(WorkItemStatusEntry wise)
+        public int InsertWorkItemStatusEntry(BaseWorkItemStatusEntry wise)
         {
             int workItemStatusID = -1;
             using (var connection = new SQLiteConnection(dbConnectionString))

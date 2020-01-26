@@ -62,7 +62,6 @@ namespace MyPA.Code
         {
             get
             {
-                Console.WriteLine("in command");
                 if (_workItemCreatingCommand == null)
                 {
                     _workItemCreatingCommand = new RelayCommand(BeginWorkItemCreation, CanAddNewWorkItem);
@@ -73,14 +72,11 @@ namespace MyPA.Code
 
         public void BeginWorkItemCreation()
         {
-            Console.WriteLine("inside BeginWorkItemCreation (1)");
+            Messenger.Default.Send<AppAction>(AppAction.CREATING_WORK_ITEM);
        /*     AppMode = ApplicationMode.ADD_MODE;
-
             var wi = new WorkItem();
             SelectedWorkItem = wi;*/
-            Console.WriteLine("inside BeginWorkItemCreation (2)");
             //            WorkItemCreatingEvent?.Invoke(this, new WorkItemEventArgs(WorkItemType.WORK_ITEM_CREATING, wi));
-            Console.WriteLine("inside BeginWorkItemCreation (3)");
         }
 
         public bool CanAddNewWorkItem()

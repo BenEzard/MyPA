@@ -28,19 +28,30 @@ namespace MyPA.Code
         /// </summary>
         public List<WorkItemStatus> WorkItemStatuses { get; set; }
 
-        private WorkItemStatus GetWorkItemStatus(int id)
+        private WorkItem _selectedWorkItem = null;
+
+
+        private int _selectedWorkItemCompletion;
+        private WorkItemStatus _selectedWorkItemStatus;
+
+
+        /// <summary>
+        /// Return a WorkItemStatus by the given WorkItemStatusID
+        /// </summary>
+        /// <param name="workItemStatusID"></param>
+        /// <returns></returns>
+        private WorkItemStatus GetWorkItemStatus(int workItemStatusID)
         {
             WorkItemStatus rValue = null;
             foreach (WorkItemStatus wis in WorkItemStatuses)
             {
-                if (wis.WorkItemStatusID == id)
+                if (wis.WorkItemStatusID == workItemStatusID)
                     rValue = wis;
             }
             return rValue;
         }
 
 
-        private WorkItem _selectedWorkItem = null;
         /// <summary>
         /// The currently selected WorkItem.
         /// </summary>
@@ -50,11 +61,83 @@ namespace MyPA.Code
             set
             {
                 _selectedWorkItem = value;
-                _selectedWorkItemStatus = GetWorkItemStatus(_selectedWorkItem.CurrentWorkItemStatusEntry.WorkItemStatusID);
+
+/*                if (_selectedWorkItem != null) // If no WorkItem was selected before...
+                {
+                    // Check if save is required for the currently selected item before changing.
+                    if (_selectedWorkItem.WorkItemID == -1)
+                    {
+                        Console.WriteLine("Attempting INSERT of WI");
+                        workItemRepository.InsertWorkItem(_selectedWorkItem);
+                        var list = GetWorkItemStatuses(true, true).ToArray(); // Method will only return one value when (true, true)
+                        var wise = new WorkItemStatusEntry(_selectedWorkItem.WorkItemID.Value, list[0].WorkItemStatusID, 0, GetWorkItemStatus(list[0].WorkItemStatusID).StatusLabel);
+                        workItemRepository.InsertWorkItemStatusEntry(wise);
+                        _selectedWorkItem.CurrentWorkItemStatusEntry = wise;
+                        ActiveWorkItems.Add(_selectedWorkItem);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Attempting UPDATE of WI");
+                        workItemRepository.UpdateWorkItem(_selectedWorkItem);
+                    }
+                }
+
+                _selectedWorkItem = value;
+                if (_selectedWorkItem.CurrentWorkItemStatusEntry == null)
+                {
+                    // Create a new default active version
+                    var list = GetWorkItemStatuses(true, true).ToArray(); // Method will only return one value when (true, true)
+                    _selectedWorkItem.CurrentWorkItemStatusEntry = new WorkItemStatusEntry(-1, list[0].WorkItemStatusID, 0, GetWorkItemStatus(list[0].WorkItemStatusID).StatusLabel);
+                }
+                _selectedWorkItemStatus = GetWorkItemStatus(_selectedWorkItem.CurrentWorkItemStatusEntry.WorkItemStatusID);*/
+                
                 OnPropertyChanged("");
+                
                 Console.WriteLine($"Selection made {_selectedWorkItem.Title}, has a WorkItemStatus of {_selectedWorkItem.CurrentWorkItemStatusEntry.WorkItemStatusID}");
             }
         }
+
+        /// <summary>
+        /// A VM variable mirroring SelectedWorkItem.Title; bound by the view.
+        /// </summary>
+        public string Title {
+            get {
+                string rValue = "";
+                if (_selectedWorkItem != null)
+                    rValue = _selectedWorkItem.Title;
+                return rValue; 
+            }
+            set {
+                _selectedWorkItem.Title = value;
+                OnPropertyChanged("");
+            }
+        }
+
+        /// <summary>
+        /// A VM variable mirroring SelectedWorkItem.Description; bound by the view.
+        /// </summary>
+        public string TaskDescription
+        {
+            get
+            {
+                string rValue = "";
+                if (_selectedWorkItem != null)
+                    rValue = _selectedWorkItem.Description;
+                return rValue;
+            }
+            set
+            {
+                _selectedWorkItem.Description = value;
+                OnPropertyChanged("");
+            }
+        }
+
+        
+
+        /*        public void NotSure()
+                {
+                    Console.WriteLine("not sure");
+                }*/
 
         /// <summary>
         /// Returns true if a WorkItem has been selected; otherwise false
@@ -70,34 +153,44 @@ namespace MyPA.Code
             }
         }
 
-        private int _selectedWorkItemCompletion;
         public int SelectedWorkItemCompletion
         {
             get
             {
-                return _selectedWorkItemCompletion;
+                int rValue = 0;
+
+                if (_selectedWorkItem != null)
+                {
+                    rValue = _selectedWorkItem.GetLastWorkItemStatusEntry().CompletionAmount;
+                    Console.WriteLine($"...The returned value is {rValue}");
+                }
+
+                return rValue;
             }
             set
             {
-                _selectedWorkItemCompletion = value;
-                var wise = new WorkItemStatusEntry(_selectedWorkItem.WorkItemID.Value, _selectedWorkItemStatus.WorkItemStatusID, _selectedWorkItemCompletion);
+                // Create a new WorkItemStatusEntry to record the change in the completion amount.
+                var wise = GenerateNewWorkItemStatusEntry(value);
                 workItemRepository.InsertWorkItemStatusEntry(wise);
-                _selectedWorkItem.CurrentWorkItemStatusEntry = wise;
+                _selectedWorkItem.LastWorkItemStatusEntry = wise;
                 OnPropertyChanged("");
-                Console.WriteLine($"Completion amount changed {value}");
             }
         }
 
-        private WorkItemStatus _selectedWorkItemStatus;
         public WorkItemStatus SelectedWorkItemStatus
         {
             get
             {
-                return _selectedWorkItemStatus;
+                WorkItemStatus rValue = null;
+                
+                if (_selectedWorkItem != null)
+                    rValue = GetWorkItemStatus(_selectedWorkItem.GetLastWorkItemStatusEntry().WorkItemStatusID);
+                
+                return rValue;
             }
             set
             {
-                ChangeWorkItemStatus(_selectedWorkItemStatus, value);
+                ChangeWorkItemStatus(GetWorkItemStatus(_selectedWorkItem.GetLastWorkItemStatusEntry().WorkItemStatusID), value);
                 OnPropertyChanged("");
             }
         }
@@ -109,10 +202,29 @@ namespace MyPA.Code
             // Load Preferences
             Preferences = workItemRepository.GetWorkItemPreferences();
 
-            LoadWorkItems();
+            Messenger.Default.Register<AppAction>(this, RequestAddNewWorkItem);
+
             LoadWorkItemStatuses();
+            LoadWorkItems();
             Console.WriteLine($"number of list items = {ActiveWorkItems.Count}");
             OnPropertyChanged("");
+        }
+
+        private WorkItemStatusEntry GenerateNewWorkItemStatusEntry(int completionAmount)
+        {
+            var currentWIS = GetWorkItemStatus(_selectedWorkItem.GetLastWorkItemStatusEntry().WorkItemStatusID);
+            var wise = new WorkItemStatusEntry(_selectedWorkItem.WorkItemID.Value, currentWIS.WorkItemStatusID, completionAmount, currentWIS.StatusLabel);
+            return wise;
+        }
+
+        private void RequestAddNewWorkItem(AppAction action)
+        {
+            if (action == AppAction.CREATING_WORK_ITEM)
+            {
+                Console.WriteLine($"Creating WorkItem...>");
+                AppMode = ApplicationMode.ADD_MODE;
+                SelectedWorkItem = new WorkItem();
+            }
         }
 
         /// <summary>
@@ -135,25 +247,27 @@ namespace MyPA.Code
         /// <param name="newValue"></param>
         private void ChangeWorkItemStatus(WorkItemStatus oldValue, WorkItemStatus newValue)
         {
-            // If the old value is a Closed status and the new value is an opened status, then set completion amount to X
+            // If the old value is a Closed status and the new value is an opened status, then set completion amount to PreferenceName.STATUS_COMPLETE_TO_ACTIVE
             if ((oldValue.IsConsideredActive == false) && (newValue.IsConsideredActive == true))
             {
-                _selectedWorkItemCompletion = GetAppPreferenceValueAsInt(PreferenceName.STATUS_COMPLETE_TO_ACTIVE);
+                SelectedWorkItemCompletion = GetAppPreferenceValueAsInt(PreferenceName.STATUS_COMPLETE_TO_ACTIVE);
             }
 
             // If it is changed to the default closed status, then set completion to 100%
             if ((newValue.IsConsideredActive == false) && (newValue.IsDefault == true))
             {
-                _selectedWorkItemCompletion = 100;
+                SelectedWorkItemCompletion = 100;
             }
 
-            var wise = new WorkItemStatusEntry(_selectedWorkItem.WorkItemID.Value, newValue.WorkItemStatusID, SelectedWorkItemCompletion);
+            var wise = new WorkItemStatusEntry(_selectedWorkItem.WorkItemID.Value, newValue.WorkItemStatusID, SelectedWorkItemCompletion, newValue.StatusLabel);
             workItemRepository.InsertWorkItemStatusEntry(wise);
-            _selectedWorkItem.CurrentWorkItemStatusEntry = wise;
-            _selectedWorkItemStatus = newValue;
-
+            _selectedWorkItem.LastWorkItemStatusEntry= wise;
         }
 
+        /// <summary>
+        /// Load all of the WorkItemStatuses.
+        /// (This is the master-list of statuses, not as they relate to individual WorkItems).
+        /// </summary>
         public void LoadWorkItemStatuses()
         {
             WorkItemStatuses = workItemRepository.GetWorkItemStatuses();
@@ -204,7 +318,7 @@ namespace MyPA.Code
         public /*async*/ void AddWorkItem(WorkItem workItem)
         {
             /*await*/
-            workItemRepository.AddWorkItem(workItem);
+            workItemRepository.InsertWorkItem(workItem);
             ActiveWorkItems.Add(workItem);
         }
 
@@ -239,9 +353,6 @@ namespace MyPA.Code
 
             var wi = new WorkItem();
             SelectedWorkItem = wi;
-            Console.WriteLine("inside BeginWorkItemCreation (2)");
-            //            WorkItemCreatingEvent?.Invoke(this, new WorkItemEventArgs(WorkItemType.WORK_ITEM_CREATING, wi));
-            Console.WriteLine("inside BeginWorkItemCreation (3)");
         }
 
         public bool CanAddNewWorkItem()
@@ -277,5 +388,55 @@ namespace MyPA.Code
                 return false;
         }
         #endregion
+
+        RelayCommand _workItemSaveNewCommand;
+        public ICommand WorkItemSaveNewCommand
+        {
+            get
+            {
+                if (_workItemSaveNewCommand == null)
+                {
+                    _workItemSaveNewCommand = new RelayCommand(SaveNewWorkItem, WorkItemReadyForSave);
+                }
+                return _workItemSaveNewCommand;
+            }
+        }
+
+        public void SaveNewWorkItem()
+        {
+            Console.WriteLine("Saving");
+            workItemRepository.InsertWorkItem(_selectedWorkItem);
+        }
+
+        public bool WorkItemReadyForSave()
+        {
+            return true;
+        }
+
+        /// <summary>
+        /// Return WorkItemStatus(es) based on their IsConsideredActive or IsDefault value.
+        /// </summary>
+        /// <param name="isConsideredActive"></param>
+        /// <param name="isDefault"></param>
+        /// <returns></returns>
+        public IEnumerable<WorkItemStatus> GetWorkItemStatuses(bool? isConsideredActive = null, bool? isDefault = null)
+        {
+            IEnumerable<WorkItemStatus> rValue;
+
+            // Return based on isActive
+            if ((isConsideredActive.HasValue == true) && (isDefault.HasValue == false))
+                rValue = WorkItemStatuses.Where(u => u.IsConsideredActive == isConsideredActive);
+            // Return based on IsDefault (2 return items possible)
+            else if ((isConsideredActive.HasValue == false) && (isDefault.HasValue == true))
+                rValue = WorkItemStatuses.Where(u => u.IsDefault == isDefault);
+            // Return based on isActive and IsDefault
+            else if ((isConsideredActive.HasValue == true) && (isDefault.HasValue == true))
+                rValue = WorkItemStatuses.Where(u => u.IsConsideredActive == isConsideredActive && u.IsDefault == isDefault);
+            // Return all
+            else
+                rValue = WorkItemStatuses;
+
+            return rValue;
+        }
     }
 }

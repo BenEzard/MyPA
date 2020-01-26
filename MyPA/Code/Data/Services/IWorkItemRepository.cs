@@ -14,7 +14,19 @@ namespace MyPA.Code.Data.Services
         /// <returns></returns>
         List<WorkItem> GetWorkItems(int loadAgedDays);
 
-        void AddWorkItem(WorkItem workItem);
+        /// <summary>
+        /// Insert a WorkItem into the database.
+        /// </summary>
+        /// <param name="workItem"></param>
+        /// <returns></returns>
+        int InsertWorkItem(WorkItem workItem);
+
+        /// <summary>
+        /// Update a WorkItem in the database.
+        /// </summary>
+        /// <param name="workItem"></param>
+        /// <returns></returns>
+        void UpdateWorkItem(WorkItem workItem);
 
         /// <summary>
         /// Get the list of all WorkItemStatus(es), including deleted.
@@ -22,6 +34,7 @@ namespace MyPA.Code.Data.Services
         /// <returns></returns>
         List<WorkItemStatus> GetWorkItemStatuses();
 
-        int InsertWorkItemStatusEntry(WorkItemStatusEntry wise);
+        int InsertWorkItemStatusEntry(BaseWorkItemStatusEntry wise);
+
     }
 }

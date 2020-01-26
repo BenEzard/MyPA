@@ -63,7 +63,14 @@
                                     <Image Source="../../Images/folder-blue.png"
                                            Grid.Column="0" Grid.Row="1" Grid.RowSpan="3"
                                             HorizontalAlignment="Center" VerticalAlignment="Top" Height="50" />
-                                    <!--<TextBlock Text="{Binding DueDate, StringFormat=\{0:ddd dd/MM HH:mm\}}" 
+                                        <TextBlock Text="{Binding CreationDateTime, StringFormat=\{0:ddd dd/MM HH:mm\}}" 
+                                               Grid.Column="1" Grid.Row="1" />
+                                        <TextBlock Text="{Binding LastWorkItemStatusEntry.StatusLabel}" Margin="0" Padding="0" 
+                                               Grid.Column="1" Grid.Row="2" />
+                                        <ProgressBar Value="{Binding LastWorkItemStatusEntry.CompletionAmount, Mode=OneWay}"
+                                        Grid.Column="1" Grid.Row="3"
+                                        MinHeight="10" MaxHeight="10" />
+                                        <!--<TextBlock Text="{Binding DueDate, StringFormat=\{0:ddd dd/MM HH:mm\}}" 
                                                Grid.Column="1" Grid.Row="1" />
                                             <TextBlock Text="{Binding Status}" Margin="0" Padding="0" 
                                                Grid.Column="1" Grid.Row="2" />
@@ -99,7 +106,7 @@
                 <StackPanel Grid.Column="0" Grid.Row="0"
                             Orientation="Horizontal" VerticalAlignment="Center" Background="LightYellow" >
                     <TextBox Name="SelectedTaskTitleField" 
-                             Text="{Binding SelectedWorkItem.Title, Mode=TwoWay}"
+                             Text="{Binding Title, Mode=TwoWay}"
                              FontSize="16" FontWeight="Bold" Width="390" Margin="5" Background="LightYellow" BorderThickness="0" VerticalAlignment="Center"
                             GotFocus="ControlGainsFocus" LostFocus="ControlLosesFocus" />
                     <TextBlock 
@@ -130,7 +137,7 @@
                                 </Grid.ColumnDefinitions>
                                 <TextBox Name="TaskDescriptionField" 
                                              Grid.Row="0" Grid.Column="0"
-                                             Text="{Binding SelectedWorkItem.Description, Mode=TwoWay}"
+                                             Text="{Binding TaskDescription, Mode=TwoWay}"
                                              GotFocus="ControlGainsFocus" LostFocus="ControlLosesFocus" 
                                              Background="LightYellow" MinLines="5" TextWrapping="Wrap" 
                                              AcceptsReturn="True" AcceptsTab="True" 
@@ -157,7 +164,9 @@
                                             
                                             <TextBlock Text="Created:" 
                                                         Grid.Column="0" Grid.Row="1" Foreground="Gray" />
-                                            <TextBlock Text="{Binding SelectedWorkItem.CreationDateTime, StringFormat=\{0:ddd dd/MM HH:mm\}}" 
+                                            <TextBlock Text="{Binding SelectedWorkItem.CreationDateTime,
+                                                TargetNullValue='',
+                                                StringFormat=\{0:ddd dd/MM HH:mm\}}" 
                                                         Grid.Column="1" Grid.Row="1" Foreground="Gray" Margin="5,0,0,0"/>
                                             <TextBlock Text="{Binding SelectedWorkItem.DaysSinceCreation}" 
                                                         Grid.Column="2" Grid.Row="1" Foreground="Gray" Margin="5,0,0,0"/>
@@ -200,8 +209,8 @@
                                 Visibility="{Binding IsApplicationInAddMode, Converter={StaticResource BooleanToVisibilityConverter}}"
                                 Command="{Binding CancelWorkitemCreatingCommand}"
                             Margin="5" Padding="5" />
-                    <Button Name="SaveButton"
-                            Content="Save" Margin="5" Padding="5" Click="SaveButton_Click" />
+                        <Button Name="SaveButton" Command="{Binding WorkItemSaveNewCommand}"
+                            Content="Save" Margin="5" Padding="5" />
                 </StackPanel>
             </Grid>
 

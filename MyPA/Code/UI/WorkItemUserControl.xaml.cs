@@ -47,9 +47,5 @@ namespace MyPA.Code.UI
             c.BorderThickness = _originalBorder.BorderThickness;
         }
 
-        private void SaveButton_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
     }
 }
