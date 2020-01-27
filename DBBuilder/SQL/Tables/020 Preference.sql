@@ -27,6 +27,7 @@ VALUES	/* Application Values - Non configurable */
 		('DEFAULT_WORKITEM_COB_MINS', 'WorkItem', '0', '0', 'The default Due Date Close of Business (COB) Minutes.', 'Y'),
 		('DUE_DATE_SET_WINDOW_MINUTES', 'WorkItem', '10', '10', 'If the Due Date is altered within this time period of setting it, don''t record it as a change.', 'Y'),
 		('DUE_DATE_CAN_BE_WEEKENDS', 'WorkItem', '0', '0', 'Should a Due Date on a Saturday or Sunday be considered legitimate?', 'Y'),
+		('WORK_ITEM_STATUS_SET_WINDOW_SECONDS', 'WorkItem', '30', '30', 'The number of seconds during which a WorkItemStatus can be changed without recording it as a new record.', 'Y'),
 
 		/* Work Item Status */
 		('STATUS_COMPLETE_TO_ACTIVE', 'WorkItem', '75', '75', 'When a WorkItem is moved from complete-to-active, set the Completion percent.', 'Y'),

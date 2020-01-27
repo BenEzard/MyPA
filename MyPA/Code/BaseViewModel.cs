@@ -12,10 +12,8 @@ namespace MyPA.Code
 
         protected void OnPropertyChanged(string propertyName)
         {
-            Console.Write("In PropertyChanged....");
             if (this.PropertyChanged != null)
             {
-                Console.WriteLine("Firing");
                 this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
             }
         }
@@ -31,11 +29,26 @@ namespace MyPA.Code
             return rValue.Value;
         }
 
+        /// <summary>
+        /// Return an Application Preference from the collection (in cache), as an int value.
+        /// </summary>
+        /// <param name="settingName"></param>
+        /// <returns></returns>
         public int GetAppPreferenceValueAsInt(PreferenceName settingName)
         {
             Preferences.TryGetValue(settingName, out Preference rValue);
             return Int32.Parse(rValue.Value);
         }
 
+        /// <summary>
+        /// Return an Application Preference from the collection (in cache), as a double value.
+        /// </summary>
+        /// <param name="settingName"></param>
+        /// <returns></returns>
+        public double GetAppPreferenceValueAsDouble(PreferenceName settingName)
+        {
+            Preferences.TryGetValue(settingName, out Preference rValue);
+            return Double.Parse(rValue.Value);
+        }
     }
 }

@@ -51,8 +51,6 @@ namespace MyPA.Code.Data.Services
 
                                 // --- WorkItemStatusEntry ----
                                 WorkItemStatusEntry wise = new WorkItemStatusEntry();
-            
-                                
 
                                 wise.WorkItemStatusEntryID = Convert.ToInt32(reader["WorkItemStatusEntry_ID"]);
                                 wise.WorkItemID = workItemID;
@@ -65,33 +63,28 @@ namespace MyPA.Code.Data.Services
                                 if (reader["wisModificationDateTime"] != DBNull.Value)
                                     wiseModificationDateTime = DateTime.Parse(reader["wisModificationDateTime"].ToString()); 
                                 wise.ModificationDateTime = wiseModificationDateTime;
-                                workItem.AddWorkItemStatusEntry(wise);
 
-                            //workItem.CompletionAmount = wise.CompletionAmount;
-
-
-Console.WriteLine($"Loading {workItem.Title}, the current status is {wise.WorkItemStatusID}");
                                 workItem.CurrentWorkItemStatusEntry = wise;
 
-                                /*                                
-                                if (reader["DueDateTime"] != DBNull.Value)
-                                    wi.DueDate = DateTime.Parse(reader["DueDateTime"].ToString());
+                            /*                                
+                            if (reader["DueDateTime"] != DBNull.Value)
+                                wi.DueDate = DateTime.Parse(reader["DueDateTime"].ToString());
 
-                                if (reader["DueDateCreationDateTime"] != DBNull.Value)
-                                    wi.Meta.DueDateUpdateDateTime = DateTime.Parse(reader["DueDateCreationDateTime"].ToString());
+                            if (reader["DueDateCreationDateTime"] != DBNull.Value)
+                                wi.Meta.DueDateUpdateDateTime = DateTime.Parse(reader["DueDateCreationDateTime"].ToString());
 
-                                wi.Status = reader["wisStatusLabel"].ToString();
-                                wi.Meta.StatusUpdateDateTime = DateTime.Parse(reader["wisStatusDateTime"].ToString());
-                                wi.IsConsideredActive = Boolean.Parse(reader["wisIsConsideredActive"].ToString());
+                            wi.Status = reader["wisStatusLabel"].ToString();
+                            wi.Meta.StatusUpdateDateTime = DateTime.Parse(reader["wisStatusDateTime"].ToString());
+                            wi.IsConsideredActive = Boolean.Parse(reader["wisIsConsideredActive"].ToString());
 
-                                int statusID = Convert.ToInt32(reader["wisStatus_ID"]);
-                                wi.workItemStatus = GetWorkItemStatus(statusID);
+                            int statusID = Convert.ToInt32(reader["wisStatus_ID"]);
+                            wi.workItemStatus = GetWorkItemStatus(statusID);
 
-                                Console.WriteLine($"Loading {(string)reader["TaskTitle"]}");
-                                _model.AddWorkItem(wi, false, false);
-                                */
+                            Console.WriteLine($"Loading {(string)reader["TaskTitle"]}");
+                            _model.AddWorkItem(wi, false, false);
+                            */
 
-                                rValue.Add(workItem);
+                            rValue.Add(workItem);
                            /* }
                             else
                             {
@@ -111,6 +104,11 @@ Console.WriteLine($"Loading {workItem.Title}, the current status is {wise.WorkIt
             return this.GetPreferences("WorkItem");
         }
 
+        /// <summary>
+        /// Insert WorkItem into the database, returning the WorkItemID.
+        /// </summary>
+        /// <param name="workItem"></param>
+        /// <returns></returns>
         public int InsertWorkItem(WorkItem workItem)
         {
             int workItemID = -1;
@@ -133,29 +131,47 @@ Console.WriteLine($"Loading {workItem.Title}, the current status is {wise.WorkIt
                     cmd.CommandText = "SELECT last_insert_rowid()";
                     workItemID = (int)(Int64)cmd.ExecuteScalar();
                     workItem.WorkItemID = workItemID;
-/* TODO: NOT SURE IF THIS IS NEEDED NOW; MIGHT BE APPLIED ELSEWHERE?
-                    if (wi.WorkItemStatusEntry == null)
-                        wi.WorkItemStatusEntry = new WorkItemStatusEntry();
-
-                    wi.WorkItemStatusEntry.WorkItemID = workItemID; // <-- here
-
-                    // Save the Due Date
-                    if (wi.DueDate > DateTime.MinValue)
-                    {
-                        wi.Meta.DueDate_ID = InsertDBDueDate(wi, wi.DueDate, "Initial WorkItem created.");
-                    }
-
-                    if ((addWorkItemStatus) && (wi.WorkItemStatusEntry.WorkItemStatusEntryID == -1))
-                    {
-                        Console.WriteLine("InsertDBWorkItem()...InsertDBWorkItemStatusEntry");
-                        InsertDBWorkItemStatusEntry(wi.WorkItemStatusEntry);
-                    }*/
                 }
                 connection.Close();
             }
             return workItemID;
         }
 
+        /// <summary>
+        /// Insert a WorkItemDueDate into the database, returning the WorkItemDueDateID.
+        /// </summary>
+        /// <param name="workItemDueDate"></param>
+        /// <returns></returns>
+        public int InsertWorkItemDueDate(WorkItemDueDate workItemDueDate)
+        {
+            int workItemDueDateID = -1;
+            using (var connection = new SQLiteConnection(dbConnectionString))
+            {
+                using (var cmd = new SQLiteCommand(connection))
+                {
+                    connection.Open();
+                    cmd.CommandText = "INSERT INTO WorkItemDueDate (WorkItem_ID, DueDateTime, ChangeReason, CreationDateTime) " +
+                        "VALUES (@workItemID, @dueDate, @changeReason, @creation)";
+                    cmd.Parameters.AddWithValue("@workItemID", workItemDueDate.WorkItemID);
+                    cmd.Parameters.AddWithValue("@dueDate", workItemDueDate.DueDateTime);
+                    cmd.Parameters.AddWithValue("@changeReason", workItemDueDate.ChangeReason);
+                    cmd.Parameters.AddWithValue("@creation", workItemDueDate.CreationDateTime);
+                    cmd.ExecuteNonQuery();
+
+                    // Get the identity value (to return)
+                    cmd.CommandText = "SELECT last_insert_rowid()";
+                    workItemDueDateID = (int)(Int64)cmd.ExecuteScalar();
+                    workItemDueDate.WorkItemDueDateID = workItemDueDateID;
+                }
+                connection.Close();
+            }
+            return workItemDueDateID;
+        }
+
+        /// <summary>
+        /// Update the WorkItem.
+        /// </summary>
+        /// <param name="workItem"></param>
         public void UpdateWorkItem(WorkItem workItem)
         {
             using (var connection = new SQLiteConnection(dbConnectionString))
@@ -249,9 +265,33 @@ Console.WriteLine($"Loading {workItem.Title}, the current status is {wise.WorkIt
                     wise.PendingDBOperation = DBActionRequired.NONE;
                 }
                 connection.Close();
-                Console.WriteLine("Inserted a new WorkItemStatusEntry");
             }
             return workItemStatusID;
+        }
+
+        public void UpdateWorkItemStatusEntry(BaseWorkItemStatusEntry wise)
+        {
+            wise.ModificationDateTime = DateTime.Now;
+            using (var connection = new SQLiteConnection(dbConnectionString))
+            {
+                using (var cmd = new SQLiteCommand(connection))
+                {
+                    connection.Open();
+                    cmd.CommandText = "UPDATE WorkItemStatusEntry " +
+                        "SET WorkItemStatus_ID = @workItemStatusID, " +
+                        "CompletionAmount = @completionAmount, " +
+                        "ModificationDateTime = @modTime " +
+                        "WHERE WorkItem_ID = @workItemID";
+                    cmd.Parameters.AddWithValue("@workItemStatusID", wise.WorkItemStatusID);
+                    cmd.Parameters.AddWithValue("@completionAmount", wise.CompletionAmount);
+                    cmd.Parameters.AddWithValue("@modTime", wise.ModificationDateTime);
+                    cmd.Parameters.AddWithValue("@workItemID", wise.WorkItemID);
+                    cmd.ExecuteNonQuery();
+
+                    wise.PendingDBOperation = DBActionRequired.NONE;
+                }
+                connection.Close();
+            }
         }
     }
 }

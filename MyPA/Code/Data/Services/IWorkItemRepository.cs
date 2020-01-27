@@ -36,5 +36,9 @@ namespace MyPA.Code.Data.Services
 
         int InsertWorkItemStatusEntry(BaseWorkItemStatusEntry wise);
 
+        void UpdateWorkItemStatusEntry(BaseWorkItemStatusEntry wise);
+
+        int InsertWorkItemDueDate(WorkItemDueDate widd);
+
     }
 }

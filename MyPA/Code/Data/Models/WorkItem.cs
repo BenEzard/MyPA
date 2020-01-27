@@ -6,9 +6,14 @@ namespace MyPA.Code.Data.Models
 {
     public class WorkItem : BaseWorkItem, INotifyPropertyChanged
     {
-        private WorkItemStatusEntry _currentWISE;
+        /// <summary>
+        /// The list of currently loaded WorkItemStatusEntries.
+        /// Note that this will normally be just the latest; unless a a status/completion value changes, in which case these will be
+        /// added to index 0 of the list.
+        /// A future update will enable the full loading of the status-change history (when requested), to allow graphs etc.
+        /// </summary>
+        private List<WorkItemStatusEntry> _workItemStatusEntries = new List<WorkItemStatusEntry>(0);
 
-        private List<WorkItemStatusEntry> _workItemStatusEntries = new List<WorkItemStatusEntry>(1);
         public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged(string propertyName)
         {
@@ -28,15 +33,38 @@ namespace MyPA.Code.Data.Models
             _workItemStatusEntries.Insert(0, entry);
         }
 
+        /// <summary>
+        /// Returns the current WorkItemStatusEntry.
+        /// </summary>
+        /// <returns></returns>
         public WorkItemStatusEntry GetLastWorkItemStatusEntry()
         {
-            return _workItemStatusEntries[0];
+            if (_workItemStatusEntries.Count == 1)
+                return _workItemStatusEntries[0];
+            else
+                return null;
         }
 
-        public WorkItemStatusEntry LastWorkItemStatusEntry
+        /// <summary>
+        /// Return the number of WorkItemStatusEntries loaded for this WorkItem.
+        /// </summary>
+        public int GetWorkItemStatusEntryCount {
+           get => _workItemStatusEntries.Count;
+        }
+
+        public WorkItemStatusEntry CurrentWorkItemStatusEntry
         {
-            get {
-                return _workItemStatusEntries[0];
+            get
+            {
+                WorkItemStatusEntry rValue;
+                if (_workItemStatusEntries.Count == 0)
+                {
+                    rValue = null;
+                }
+                else 
+                    rValue = _workItemStatusEntries[0];
+
+                return rValue;
             }
             set
             {
@@ -45,34 +73,7 @@ namespace MyPA.Code.Data.Models
             }
         }
 
-
-        /// <summary>
-        /// Get the Current WorkItemStatusEntry.
-        /// </summary>
-        public WorkItemStatusEntry CurrentWorkItemStatusEntry
-        {
-            get
-            {
-                return _currentWISE;
-            }
-            set
-            {
-                _currentWISE = value;
-            }
-        }
-
-/*        private int _completionAmount;
-        public int CompletionAmount
-        {
-            get {
-                return _completionAmount;
-            }
-            set
-            {
-                _completionAmount = value;
-            }
-        }*/
-
+        public List<WorkItemStatusEntry> GetWorkItemStatusEntries() => _workItemStatusEntries;
 
         public double DaysSinceCreation { 
             get

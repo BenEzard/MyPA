@@ -65,9 +65,9 @@
                                             HorizontalAlignment="Center" VerticalAlignment="Top" Height="50" />
                                         <TextBlock Text="{Binding CreationDateTime, StringFormat=\{0:ddd dd/MM HH:mm\}}" 
                                                Grid.Column="1" Grid.Row="1" />
-                                        <TextBlock Text="{Binding LastWorkItemStatusEntry.StatusLabel}" Margin="0" Padding="0" 
+                                        <TextBlock Text="{Binding CurrentWorkItemStatusEntry.StatusLabel}" Margin="0" Padding="0" 
                                                Grid.Column="1" Grid.Row="2" />
-                                        <ProgressBar Value="{Binding LastWorkItemStatusEntry.CompletionAmount, Mode=OneWay}"
+                                        <ProgressBar Value="{Binding CurrentWorkItemStatusEntry.CompletionAmount, Mode=OneWay}"
                                         Grid.Column="1" Grid.Row="3"
                                         MinHeight="10" MaxHeight="10" />
                                         <!--<TextBlock Text="{Binding DueDate, StringFormat=\{0:ddd dd/MM HH:mm\}}" 
@@ -111,9 +111,9 @@
                             GotFocus="ControlGainsFocus" LostFocus="ControlLosesFocus" />
                     <TextBlock 
                         Padding="5,5,5,5" VerticalAlignment="Center">Due Date:</TextBlock>
-                        <!--<Button Name="DueDateButton" 
+                        <Button Name="DueDateButton" 
                             Content="{Binding SelectedWorkItem.DueDate, StringFormat=\{0:ddd dd/MM HH:mm\}}" 
-                            Padding="5" Margin="5" />-->
+                            Padding="5" Margin="5" />
                         <TextBlock Name="DueInDaysTextField" 
                              Padding="5,5,5,5" VerticalAlignment="Center" Background="LightYellow" Width="200" />
                 </StackPanel>

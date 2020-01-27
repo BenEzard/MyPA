@@ -30,11 +30,6 @@ namespace MyPA.Code
 
         private WorkItem _selectedWorkItem = null;
 
-
-        private int _selectedWorkItemCompletion;
-        private WorkItemStatus _selectedWorkItemStatus;
-
-
         /// <summary>
         /// Return a WorkItemStatus by the given WorkItemStatusID
         /// </summary>
@@ -93,7 +88,7 @@ namespace MyPA.Code
                 
                 OnPropertyChanged("");
                 
-                Console.WriteLine($"Selection made {_selectedWorkItem.Title}, has a WorkItemStatus of {_selectedWorkItem.CurrentWorkItemStatusEntry.WorkItemStatusID}");
+//                Console.WriteLine($"Selection made {_selectedWorkItem.Title}, has a WorkItemStatus of {_selectedWorkItem.CurrentWorkItemStatusEntry.WorkItemStatusID}");
             }
         }
 
@@ -161,7 +156,13 @@ namespace MyPA.Code
 
                 if (_selectedWorkItem != null)
                 {
-                    rValue = _selectedWorkItem.GetLastWorkItemStatusEntry().CompletionAmount;
+                    if ((IsApplicationInAddMode) && (_selectedWorkItem.GetLastWorkItemStatusEntry() == null))
+                    {
+                        rValue = 0;
+                    }
+                    else 
+                        rValue = _selectedWorkItem.GetLastWorkItemStatusEntry().CompletionAmount;
+                    
                     Console.WriteLine($"...The returned value is {rValue}");
                 }
 
@@ -171,8 +172,24 @@ namespace MyPA.Code
             {
                 // Create a new WorkItemStatusEntry to record the change in the completion amount.
                 var wise = GenerateNewWorkItemStatusEntry(value);
-                workItemRepository.InsertWorkItemStatusEntry(wise);
-                _selectedWorkItem.LastWorkItemStatusEntry = wise;
+
+                // Check to see if the latest WISE was created within the last x seconds; if so, update instead of insert.
+                WorkItemStatusEntry lastItem = _selectedWorkItem.CurrentWorkItemStatusEntry;
+                double secondsDifferent = (DateTime.Now - lastItem.CreationDateTime).TotalSeconds;
+                double period = GetAppPreferenceValueAsDouble(PreferenceName.WORK_ITEM_STATUS_SET_WINDOW_SECONDS);
+                if (secondsDifferent < period)
+                {
+                    workItemRepository.UpdateWorkItemStatusEntry(wise);
+                    // Copy the values over (update the existing item instead of recreating).
+                    lastItem.StatusLabel = wise.StatusLabel;
+                    lastItem.CompletionAmount = wise.CompletionAmount;
+                    lastItem.WorkItemStatusID = wise.WorkItemStatusID;
+                }
+                else
+                {
+                    workItemRepository.InsertWorkItemStatusEntry(wise);
+                    _selectedWorkItem.CurrentWorkItemStatusEntry = wise;
+                }
                 OnPropertyChanged("");
             }
         }
@@ -184,8 +201,13 @@ namespace MyPA.Code
                 WorkItemStatus rValue = null;
                 
                 if (_selectedWorkItem != null)
-                    rValue = GetWorkItemStatus(_selectedWorkItem.GetLastWorkItemStatusEntry().WorkItemStatusID);
-                
+                {
+                    if ((IsApplicationInAddMode) && (_selectedWorkItem.GetLastWorkItemStatusEntry() == null))
+                        rValue = GetWorkItemStatuses(true, true).ToList()[0];
+                    else
+                        rValue = GetWorkItemStatus(_selectedWorkItem.GetLastWorkItemStatusEntry().WorkItemStatusID);
+                }
+
                 return rValue;
             }
             set
@@ -210,6 +232,11 @@ namespace MyPA.Code
             OnPropertyChanged("");
         }
 
+        /// <summary>
+        /// Generate a new WorkItemStatusEntry by taking the current WorkItemStatus and CompletionAmount
+        /// </summary>
+        /// <param name="completionAmount"></param>
+        /// <returns></returns>
         private WorkItemStatusEntry GenerateNewWorkItemStatusEntry(int completionAmount)
         {
             var currentWIS = GetWorkItemStatus(_selectedWorkItem.GetLastWorkItemStatusEntry().WorkItemStatusID);
@@ -260,8 +287,24 @@ namespace MyPA.Code
             }
 
             var wise = new WorkItemStatusEntry(_selectedWorkItem.WorkItemID.Value, newValue.WorkItemStatusID, SelectedWorkItemCompletion, newValue.StatusLabel);
-            workItemRepository.InsertWorkItemStatusEntry(wise);
-            _selectedWorkItem.LastWorkItemStatusEntry= wise;
+
+            // Check to see if the latest WISE was created within the last x seconds; if so, update instead of insert.
+            WorkItemStatusEntry lastItem = _selectedWorkItem.CurrentWorkItemStatusEntry;
+            double secondsDifferent = (DateTime.Now - lastItem.CreationDateTime).TotalSeconds;
+            double period = GetAppPreferenceValueAsDouble(PreferenceName.WORK_ITEM_STATUS_SET_WINDOW_SECONDS);
+            if (secondsDifferent < period)
+            {
+                workItemRepository.UpdateWorkItemStatusEntry(wise);
+                // Copy the values over (update the existing item instead of recreating).
+                lastItem.StatusLabel = wise.StatusLabel;
+                lastItem.CompletionAmount = wise.CompletionAmount;
+                lastItem.WorkItemStatusID = wise.WorkItemStatusID;
+            }
+            else
+            {
+                workItemRepository.InsertWorkItemStatusEntry(wise);
+                _selectedWorkItem.CurrentWorkItemStatusEntry = wise;
+            }
         }
 
         /// <summary>
@@ -402,10 +445,21 @@ namespace MyPA.Code
             }
         }
 
+        /// <summary>
+        /// Save a new WorkItem to the database and add it to the WorkItem collection.
+        /// </summary>
         public void SaveNewWorkItem()
         {
             Console.WriteLine("Saving");
-            workItemRepository.InsertWorkItem(_selectedWorkItem);
+            int workItemID = workItemRepository.InsertWorkItem(_selectedWorkItem);
+            // Get default active status
+            WorkItemStatus wis = GetWorkItemStatuses(true, true).ToList()[0];
+            var wise = new WorkItemStatusEntry(workItemID, wis.WorkItemStatusID, 0, wis.StatusLabel);
+            workItemRepository.InsertWorkItemStatusEntry(wise);
+            _selectedWorkItem.CurrentWorkItemStatusEntry = wise;
+            int daysToComplete = GetAppPreferenceValueAsInt(PreferenceName.DEFAULT_WORKITEM_LENGTH_DAYS);
+            workItemRepository.InsertWorkItemDueDate(new WorkItemDueDate(workItemID, DateTime.Now.AddDays(daysToComplete), "Initial work item creation."));
+            ActiveWorkItems.Add(_selectedWorkItem);
         }
 
         public bool WorkItemReadyForSave()
