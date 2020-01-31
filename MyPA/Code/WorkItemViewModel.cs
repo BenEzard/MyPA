@@ -162,8 +162,6 @@ namespace MyPA.Code
                     }
                     else 
                         rValue = _selectedWorkItem.GetLastWorkItemStatusEntry().CompletionAmount;
-                    
-                    Console.WriteLine($"...The returned value is {rValue}");
                 }
 
                 return rValue;
@@ -225,10 +223,10 @@ namespace MyPA.Code
             Preferences = workItemRepository.GetWorkItemPreferences();
 
             Messenger.Default.Register<AppAction>(this, RequestAddNewWorkItem);
+            Messenger.Default.Register<WorkItemDueDate>(this, ReceivedWorkItemDueDateChange);
 
             LoadWorkItemStatuses();
             LoadWorkItems();
-            Console.WriteLine($"number of list items = {ActiveWorkItems.Count}");
             OnPropertyChanged("");
         }
 
@@ -248,10 +246,14 @@ namespace MyPA.Code
         {
             if (action == AppAction.CREATING_WORK_ITEM)
             {
-                Console.WriteLine($"Creating WorkItem...>");
                 AppMode = ApplicationMode.ADD_MODE;
                 SelectedWorkItem = new WorkItem();
             }
+        }
+
+        private void ReceivedWorkItemDueDateChange(WorkItemDueDate wiDueDate)
+        {
+            SelectedWorkItem.CurrentWorkItemDueDate = wiDueDate;
         }
 
         /// <summary>
@@ -391,14 +393,41 @@ namespace MyPA.Code
 
         public void BeginWorkItemCreation()
         {
-            Console.WriteLine("inside BeginWorkItemCreation (1)");
             AppMode = ApplicationMode.ADD_MODE;
 
             var wi = new WorkItem();
+            var widd = new WorkItemDueDate(DateTime.Now.Date);
             SelectedWorkItem = wi;
+            //SelectedWorkItem.CurrentWorkItemDueDate = widd;
+            ReceivedWorkItemDueDateChange(widd);
         }
 
         public bool CanAddNewWorkItem()
+        {
+            return true;
+        }
+        #endregion
+
+        #region ShowDueDateDialogCommand
+        RelayCommand _dueDateDialogCommand;
+        public ICommand ShowDueDateDialogCommand
+        {
+            get
+            {
+                if (_dueDateDialogCommand == null)
+                {
+                    _dueDateDialogCommand = new RelayCommand(ShowDueDateDialog, CanShowDueDateDialog);
+                }
+                return _workItemCreatingCommand;
+            }
+        }
+
+        public void ShowDueDateDialog()
+        {
+
+        }
+
+        public bool CanShowDueDateDialog()
         {
             return true;
         }
@@ -450,7 +479,6 @@ namespace MyPA.Code
         /// </summary>
         public void SaveNewWorkItem()
         {
-            Console.WriteLine("Saving");
             int workItemID = workItemRepository.InsertWorkItem(_selectedWorkItem);
             // Get default active status
             WorkItemStatus wis = GetWorkItemStatuses(true, true).ToList()[0];
@@ -458,8 +486,10 @@ namespace MyPA.Code
             workItemRepository.InsertWorkItemStatusEntry(wise);
             _selectedWorkItem.CurrentWorkItemStatusEntry = wise;
             int daysToComplete = GetAppPreferenceValueAsInt(PreferenceName.DEFAULT_WORKITEM_LENGTH_DAYS);
-            workItemRepository.InsertWorkItemDueDate(new WorkItemDueDate(workItemID, DateTime.Now.AddDays(daysToComplete), "Initial work item creation."));
+//            workItemRepository.InsertWorkItemDueDate(new WorkItemDueDate(workItemID, DateTime.Now.AddDays(daysToComplete), "Initial work item creation."));
             ActiveWorkItems.Add(_selectedWorkItem);
+
+            AppMode = ApplicationMode.EDIT_MODE;
         }
 
         public bool WorkItemReadyForSave()

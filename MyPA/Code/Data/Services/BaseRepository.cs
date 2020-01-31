@@ -19,11 +19,12 @@ namespace MyPA.Code.Data.Services
         /// <summary>
         /// Get preferences for the specified viewModel. If no viewModel is provided, all preferences are returned.
         /// </summary>
-        /// <param name="viewModel"></param>
+        /// <param name="appliesTo"></param>
         /// <returns></returns>
-        internal Dictionary<PreferenceName, Preference> GetPreferences(string viewModel)
+        internal Dictionary<PreferenceName, Preference> GetPreferences(string appliesTo)
         {
             var rValue = new Dictionary<PreferenceName, Preference>();
+            appliesTo = '%' + appliesTo + '%';
 
             using (var connection = new SQLiteConnection(dbConnectionString))
             {
@@ -31,14 +32,14 @@ namespace MyPA.Code.Data.Services
                 {
                     connection.Open();
                     string sql = "SELECT * FROM Preference";
-                    if (viewModel == null)
+                    if (appliesTo == null)
                     {
                         cmd.CommandText = sql;
                     }
                     else
                     {
-                        sql += " WHERE (Model = @model)";
-                        cmd.Parameters.AddWithValue("@model", viewModel);
+                        sql += " WHERE (AppliesTo LIKE @appliesTo)";
+                        cmd.Parameters.AddWithValue("@appliesTo", appliesTo);
                         cmd.CommandText = sql;
                     }
 

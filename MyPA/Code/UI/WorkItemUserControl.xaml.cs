@@ -47,5 +47,10 @@ namespace MyPA.Code.UI
             c.BorderThickness = _originalBorder.BorderThickness;
         }
 
+        private void DueDateButton_Click(object sender, RoutedEventArgs e)
+        {
+            var dd = new DueDateDialog(((WorkItemViewModel)DataContext).SelectedWorkItem.CurrentWorkItemDueDate);
+            dd.ShowDialog();
+        }
     }
 }

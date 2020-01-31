@@ -74,6 +74,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Page Include="Code\UI\DueDateDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Code\UI\WorkItemUserControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -105,8 +109,13 @@
     <Compile Include="Code\Data\Services\IApplicationRepository.cs" />
     <Compile Include="Code\Data\Services\IWorkItemRepository.cs" />
     <Compile Include="Code\Data\Services\WorkItemRepository.cs" />
+    <Compile Include="Code\DueDateViewModel.cs" />
     <Compile Include="Code\Messenger.cs" />
+    <Compile Include="Code\UI\DueDateDialog.xaml.cs">
+      <DependentUpon>DueDateDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Code\UI\Util\BooleanToVisibilityConverter.cs" />
+    <Compile Include="Code\UI\Util\CollectionMethods.cs" />
     <Compile Include="Code\UI\Util\RelayCommand.cs" />
     <Compile Include="Code\UI\WorkItemUserControl.xaml.cs">
       <DependentUpon>WorkItemUserControl.xaml</DependentUpon>

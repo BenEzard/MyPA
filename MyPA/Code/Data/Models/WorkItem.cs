@@ -14,6 +14,8 @@ namespace MyPA.Code.Data.Models
         /// </summary>
         private List<WorkItemStatusEntry> _workItemStatusEntries = new List<WorkItemStatusEntry>(0);
 
+        private List<WorkItemDueDate> _workItemDueDates = new List<WorkItemDueDate>(0);
+
         public event PropertyChangedEventHandler PropertyChanged;
         protected void OnPropertyChanged(string propertyName)
         {
@@ -74,6 +76,32 @@ namespace MyPA.Code.Data.Models
         }
 
         public List<WorkItemStatusEntry> GetWorkItemStatusEntries() => _workItemStatusEntries;
+
+        public void AddWorkItemDueDate(WorkItemDueDate entry)
+        {
+            _workItemDueDates.Insert(0, entry);
+        }
+
+        public WorkItemDueDate CurrentWorkItemDueDate
+        {
+            get
+            {
+                WorkItemDueDate rValue;
+                if (_workItemDueDates.Count == 0)
+                {
+                    rValue = null;
+                }
+                else
+                    rValue = _workItemDueDates[0];
+
+                return rValue;
+            }
+            set
+            {
+                AddWorkItemDueDate(value);
+                OnPropertyChanged("");
+            }
+        }
 
         public double DaysSinceCreation { 
             get

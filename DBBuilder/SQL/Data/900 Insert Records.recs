@@ -12,8 +12,7 @@ INSERT INTO WorkItemStatusEntry (WorkItem_ID, WorkItemStatus_ID, CompletionAmoun
 INSERT INTO WorkItemStatusEntry (WorkItem_ID, WorkItemStatus_ID, CompletionAmount, CreationDateTime) VALUES (1, 1, 40, '2019-10-05 13:01:00.000');
 INSERT INTO WorkItemStatusEntry (WorkItem_ID, WorkItemStatus_ID, CompletionAmount, CreationDateTime) VALUES (1, 1, 50, '2019-10-06 12:10:00.000');
 
-INSERT INTO WorkItemDueDate (WorkItem_ID, DueDateTime, CreationDateTime) VALUES (1, '2019-10-10 13:30:00.000', '2019-10-01 07:00:00.000');
-
+INSERT INTO WorkItemDueDate (WorkItem_ID, DueDateTime, CreationDateTime) VALUES (1, '2020-02-10 13:30:00.000', '2019-10-01 07:00:00.000');
 
 INSERT INTO WorkItem (TaskTitle, TaskDescription) VALUES ('Work Item #2', 'This one is set to Awaiting Feedback, and the due date has changed.');
 
@@ -21,9 +20,9 @@ INSERT INTO WorkItemStatusEntry (WorkItem_ID, WorkItemStatus_ID, CompletionAmoun
 INSERT INTO WorkItemStatusEntry (WorkItem_ID, WorkItemStatus_ID, CompletionAmount, CreationDateTime) VALUES (2, 2, 70, '2019-10-02 17:00:00.000');
 INSERT INTO WorkItemStatusEntry (WorkItem_ID, WorkItemStatus_ID, CompletionAmount, CreationDateTime) VALUES (2, 2, 60, '2019-10-02 17:10:00.000');
 
-INSERT INTO WorkItemDueDate (WorkItem_ID, DueDateTime, CreationDateTime) VALUES (2, '2019-10-03 13:30:00.000', '2019-10-01 07:00:00.000');
+INSERT INTO WorkItemDueDate (WorkItem_ID, DueDateTime, CreationDateTime) VALUES (2, '2020-02-05 13:30:00.000', '2019-10-01 07:00:00.000');
 
-INSERT INTO WorkItemDueDate (WorkItem_ID, DueDateTime, CreationDateTime) VALUES (2, '2019-10-05 18:00:00.000', '2019-10-02 07:00:00.000');
+INSERT INTO WorkItemDueDate (WorkItem_ID, DueDateTime, CreationDateTime) VALUES (2, '2020-02-10 18:00:00.000', '2019-10-02 07:00:00.000');
 
 
 
@@ -66,26 +65,3 @@ INSERT INTO Journal (WorkItem_ID, Header, [Entry]) VALUES
     (3, 'Third entry', 'With more details than a cat in the hat lead by a rat with a zat-nik-ata. With more details than a cat in the hat lead by a rat with a zat-nik-ata. With more details than a cat in the hat lead by a rat with a zat-nik-ata. 
 	
 	With more details than a cat in the hat lead by a rat with a zat-nik-ata. With more details than a cat in the hat lead by a rat with a zat-nik-ata.');
-
-INSERT INTO NotebookTopic (NotebookTopic_ID, ParentTopic_ID, Topic) VALUES (1, NULL, 'Technical Guide');
-INSERT INTO NotebookTopic (NotebookTopic_ID, ParentTopic_ID, Topic) VALUES (2, NULL, 'Team Info');
-INSERT INTO NotebookTopic (NotebookTopic_ID, ParentTopic_ID, Topic) VALUES (3, 1, 'Deployment');
-INSERT INTO NotebookTopic (NotebookTopic_ID, ParentTopic_ID, Topic) VALUES (4, 3, 'to ODS');
-INSERT INTO NotebookTopic (NotebookTopic_ID, ParentTopic_ID, Topic) VALUES (5, 3, 'to DW');
-INSERT INTO NotebookTopic (NotebookTopic_ID, ParentTopic_ID, Topic) VALUES (6, 3, 'Jitterbit');
-INSERT INTO NotebookTopic (NotebookTopic_ID, ParentTopic_ID, Topic) VALUES (7, 6, 'Development');
-INSERT INTO NotebookTopic (NotebookTopic_ID, ParentTopic_ID, Topic) VALUES (8, 6, 'Test');
-INSERT INTO NotebookTopic (NotebookTopic_ID, ParentTopic_ID, Topic) VALUES (9, 7, 'Production');
-INSERT INTO NotebookTopic (NotebookTopic_ID, ParentTopic_ID, Topic) VALUES (10, NULL, 'Environment');
-INSERT INTO NotebookTopic (NotebookTopic_ID, ParentTopic_ID, Topic) VALUES (11, 10, 'Servers');
-INSERT INTO NotebookTopic (NotebookTopic_ID, ParentTopic_ID, Topic) VALUES (12, NULL, 'Midrange Applications');
-INSERT INTO NotebookTopic (NotebookTopic_ID, ParentTopic_ID, Topic) VALUES (13, 12, 'AHATS');
-INSERT INTO NotebookTopic (NotebookTopic_ID, ParentTopic_ID, Topic) VALUES (14, 12, 'MICA');
-INSERT INTO NotebookTopic (NotebookTopic_ID, ParentTopic_ID, Topic) VALUES (15, 12, 'H2H');
-INSERT INTO NotebookTopic (NotebookTopic_ID, ParentTopic_ID, Topic) VALUES (16, 15, 'SHS Reporting');
-
-INSERT INTO WorkItemCheckList (WorkItem_ID, TaskText) VALUES (1, 'Start the Project');
-INSERT INTO WorkItemCheckList (WorkItem_ID, TaskText, Indent) VALUES (1, 'Sub Item', 10);
-INSERT INTO WorkItemCheckList (WorkItem_ID, TaskText, TaskDetails) VALUES (1, 'A really long task item that has stuff in it. Its a long one. Its a long one.','With more details than a cat in the hat lead by a rat with a zat-nik-ata.');
-
-INSERT INTO WorkItemCheckList (WorkItem_ID, TaskText) VALUES (2, 'Do this checkbox thing.');

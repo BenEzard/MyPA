@@ -1,4 +1,5 @@
 ﻿using MyPA.Code.Data.Models;
+using System;
 using System.Collections.Generic;
 
 namespace MyPA.Code.Data.Services
@@ -39,6 +40,10 @@ namespace MyPA.Code.Data.Services
         void UpdateWorkItemStatusEntry(BaseWorkItemStatusEntry wise);
 
         int InsertWorkItemDueDate(WorkItemDueDate widd);
+
+        void UpdateWorkItemDueDate(WorkItemDueDate widd);
+
+        List<DateTime> GetIneligibleDueDates();
 
     }
 }

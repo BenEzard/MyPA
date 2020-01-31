@@ -66,25 +66,17 @@ namespace MyPA.Code.Data.Services
 
                                 workItem.CurrentWorkItemStatusEntry = wise;
 
-                            /*                                
-                            if (reader["DueDateTime"] != DBNull.Value)
-                                wi.DueDate = DateTime.Parse(reader["DueDateTime"].ToString());
+                                // -- Due Date
+                                WorkItemDueDate dueDate = new WorkItemDueDate(Convert.ToInt32(reader["WorkItemDueDate_ID"]), workItemID);
+                                dueDate.DueDateTime = DateTime.Parse(reader["DueDateTime"].ToString());
+                                dueDate.CreationDateTime = DateTime.Parse(reader["DueDateCreationDateTime"].ToString());
 
-                            if (reader["DueDateCreationDateTime"] != DBNull.Value)
-                                wi.Meta.DueDateUpdateDateTime = DateTime.Parse(reader["DueDateCreationDateTime"].ToString());
+                                if (reader["DueDateModificationDateTime"] != DBNull.Value)
+                                    dueDate.ModificationDateTime = DateTime.Parse(reader["DueDateModificationDateTime"].ToString());
 
-                            wi.Status = reader["wisStatusLabel"].ToString();
-                            wi.Meta.StatusUpdateDateTime = DateTime.Parse(reader["wisStatusDateTime"].ToString());
-                            wi.IsConsideredActive = Boolean.Parse(reader["wisIsConsideredActive"].ToString());
+                                workItem.CurrentWorkItemDueDate = dueDate;
 
-                            int statusID = Convert.ToInt32(reader["wisStatus_ID"]);
-                            wi.workItemStatus = GetWorkItemStatus(statusID);
-
-                            Console.WriteLine($"Loading {(string)reader["TaskTitle"]}");
-                            _model.AddWorkItem(wi, false, false);
-                            */
-
-                            rValue.Add(workItem);
+                                rValue.Add(workItem);
                            /* }
                             else
                             {
@@ -99,6 +91,10 @@ namespace MyPA.Code.Data.Services
             return rValue;
         }
 
+        /// <summary>
+        /// Return all preferences used by the WorkItemViewModel.
+        /// </summary>
+        /// <returns></returns>
         Dictionary<PreferenceName, Preference> IWorkItemRepository.GetWorkItemPreferences()
         {
             return this.GetPreferences("WorkItem");
@@ -166,6 +162,32 @@ namespace MyPA.Code.Data.Services
                 connection.Close();
             }
             return workItemDueDateID;
+        }
+
+        /// <summary>
+        /// Update a WorkItemDueDate into the database, returning the WorkItemDueDateID.
+        /// </summary>
+        /// <param name="workItemDueDate"></param>
+        public void UpdateWorkItemDueDate(WorkItemDueDate workItemDueDate)
+        {
+            using (var connection = new SQLiteConnection(dbConnectionString))
+            {
+                using (var cmd = new SQLiteCommand(connection))
+                {
+                    connection.Open();
+                    cmd.CommandText = "UPDATE WorkItemDueDate " +
+                        "SET DueDateTime = @dueDate, " +
+                        "ChangeReason = @changeReason, " +
+                        "CreationDateTime = @creation " +
+                        "WHERE WorkItemDueDate_ID = @workItemDueDateID";
+                    cmd.Parameters.AddWithValue("@workItemDueDateID", workItemDueDate.WorkItemID);
+                    cmd.Parameters.AddWithValue("@dueDate", workItemDueDate.DueDateTime);
+                    cmd.Parameters.AddWithValue("@changeReason", workItemDueDate.ChangeReason);
+                    cmd.Parameters.AddWithValue("@creation", workItemDueDate.CreationDateTime);
+                    cmd.ExecuteNonQuery();
+                }
+                connection.Close();
+            }
         }
 
         /// <summary>
@@ -269,6 +291,10 @@ namespace MyPA.Code.Data.Services
             return workItemStatusID;
         }
 
+        /// <summary>
+        /// Update a WorkItemStatusEntry.
+        /// </summary>
+        /// <param name="wise"></param>
         public void UpdateWorkItemStatusEntry(BaseWorkItemStatusEntry wise)
         {
             wise.ModificationDateTime = DateTime.Now;
@@ -292,6 +318,40 @@ namespace MyPA.Code.Data.Services
                 }
                 connection.Close();
             }
+        }
+
+        /// <summary>
+        /// Get the user-created list of dates which are ineligible as DueDates.
+        /// </summary>
+        /// <returns></returns>
+        public List<DateTime> GetIneligibleDueDates()
+        {
+            // When this is called, first clear any content of the WorkItem collections.
+            List<DateTime> rValue = new List<DateTime>();
+
+            using (var connection = new SQLiteConnection(BaseRepository.dbConnectionString))
+            {
+                using (var cmd = new SQLiteCommand(connection))
+                {
+                    connection.Open();
+                    cmd.CommandText = "SELECT IneligibleDate" +
+                        " FROM IneligibleDueDate" +
+                        " WHERE IneligibleDate >= @now" +
+                        " ORDER BY IneligibleDate ASC";
+                    cmd.Parameters.AddWithValue("@now", DateTime.Now.Date);
+
+                    using (SQLiteDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            rValue.Add(DateTime.Parse(reader["IneligibleDate"].ToString()));
+                        }
+                    }
+                    connection.Close();
+                }
+            }
+
+            return rValue;
         }
     }
 }

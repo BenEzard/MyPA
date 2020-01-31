@@ -4,6 +4,7 @@
     DueDateTime         DATETIME      NOT NULL,
     ChangeReason        VARCHAR (500) NULL,
     CreationDateTime    DATETIME NOT NULL DEFAULT(CURRENT_TIMESTAMP),
+    ModificationDateTime    DATETIME NULL, 
 	DeletionDateTime    DATETIME NULL 
 );
 

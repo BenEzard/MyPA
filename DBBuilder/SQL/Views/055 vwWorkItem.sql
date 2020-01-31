@@ -6,8 +6,10 @@ SELECT
 	WorkItem.ModificationDateTime,
 	WorkItem.DeletionDateTime,
 	WorkItem.TaskDescription, 
+	DueDate.WorkItemDueDate_ID,
 	DueDate.DueDateTime,
-	DueDate.DueDateCreationDateTime,
+	DueDate.CreationDateTime AS DueDateCreationDateTime,
+	DueDate.ModificationDateTime AS DueDateModificationDateTime,
 	vwMostRecentWorkItemStatusEntry.WorkItemStatusEntry_ID,
 	vwMostRecentWorkItemStatusEntry.WorkItemStatus_ID AS WorkItemStatus_ID,
 	vwMostRecentWorkItemStatusEntry.StatusLabel AS wisStatusLabel,
@@ -20,22 +22,7 @@ SELECT
 FROM WorkItem
 LEFT JOIN vwMostRecentWorkItemStatusEntry 
 	ON WorkItem.WorkItem_ID = vwMostRecentWorkItemStatusEntry.WorkItem_ID
-LEFT JOIN ( 
-    SELECT 
-		WorkItemDueDate.WorkItemDueDate_ID, 
-		WorkItemDueDate.DueDateTime,
-		WorkItemDueDate.CreationDateTime AS DueDateCreationDateTime,
-		WorkItemDueDate.ChangeReason, 
-		WorkItemDueDate.WorkItem_ID 
-    FROM WorkItemDueDate 
-    INNER JOIN ( 
-        SELECT WorkItemDueDate.WorkItem_ID, 
-			MAX(WorkItemDueDate.CreationDateTime) AS mxCreateDate 
-        FROM WorkItemDueDate 
-        GROUP BY WorkItemDueDate.WorkItem_ID 
-    ) AS mxDueDate 
-	ON mxDueDate.WorkItem_ID = WorkItemDueDate.WorkItem_ID AND 
-		mxDueDate.mxCreateDate = WorkItemDueDate.CreationDateTime 
-) AS DueDate 
-	ON DueDate.WorkItem_ID = WorkItem.WorkItem_ID
-WHERE WorkItem.DeletionDateTime IS NULL
+LEFT JOIN vwMostRecentDueDate AS DueDate
+	ON WorkItem.WorkItem_ID = DueDate.WorkItem_ID
+WHERE 
+	WorkItem.DeletionDateTime IS NULL
