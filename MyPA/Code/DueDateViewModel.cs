@@ -352,8 +352,10 @@ namespace MyPA.Code
             {
                 workItemRepository.InsertWorkItemDueDate(NewDueDate);
             }
-
             Messenger.Default.Send(NewDueDate);
+
+            // Replace the Original data with the now data (in case there's another change)
+            _originalData = NewDueDate;
         }
 
         /// <summary>

@@ -9,7 +9,7 @@
         mc:Ignorable="d"
         Title="{Binding ApplicationNameAndVersion}"
             Height="{Binding ApplicationHeight}" Width="{Binding ApplicationWidth}" 
-            Left="{Binding ApplicationPositionLeft}" Top="{Binding ApplicationPositionTop}" >
+            Left="{Binding ApplicationPositionLeft}" Top="{Binding ApplicationPositionTop}" Closing="Window_Closing" Loaded="Window_Loaded">
     <Window.Resources>
         <local:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
     </Window.Resources>

@@ -111,7 +111,7 @@
                             GotFocus="ControlGainsFocus" LostFocus="ControlLosesFocus" />
                     <TextBlock 
                         Padding="5,5,5,5" VerticalAlignment="Center">Due Date:</TextBlock>
-                        <Button Name="DueDateButton" 
+                        <Button Name="DueDateButton" IsEnabled="{Binding CanDueDateBeChanged}"
                             Content="{Binding SelectedWorkItem.CurrentWorkItemDueDate.DueDateTime, StringFormat=\{0:ddd dd/MM HH:mm\}}" 
                             Padding="5" Margin="5" Click="DueDateButton_Click" />
                         <TextBlock Name="DueInDaysTextField" 
@@ -190,7 +190,7 @@
                 <StackPanel Grid.Column="0" Grid.Row="2" Orientation="Horizontal"
                              Visibility="{Binding IsWorkItemSelected, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <TextBlock Text="Progress:" Margin="5" VerticalAlignment="Center" />
-                    <Slider x:Name="WorkItemProgressSlider" 
+                    <Slider x:Name="WorkItemProgressSlider" IsEnabled="{Binding CanDueDateBeChanged}"
                            Value="{Binding SelectedWorkItemCompletion}"
                                 TickFrequency="10" TickPlacement="BottomRight" Margin="5" VerticalAlignment="Center"
                                 IsSnapToTickEnabled="False" IsMoveToPointEnabled="True"

@@ -41,7 +41,7 @@ namespace MyPA.Code.Data.Models
         /// <returns></returns>
         public WorkItemStatusEntry GetLastWorkItemStatusEntry()
         {
-            if (_workItemStatusEntries.Count == 1)
+            if (_workItemStatusEntries.Count > 0)
                 return _workItemStatusEntries[0];
             else
                 return null;

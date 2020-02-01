@@ -113,5 +113,22 @@ namespace MyPA.Code
             return true;
         }
         #endregion
+
+        /// <summary>
+        /// Save the current window location.
+        /// TODO Change this to ICommand.
+        /// </summary>
+        /// <param name="height"></param>
+        /// <param name="width"></param>
+        /// <param name="top"></param>
+        /// <param name="left"></param>
+        public void SaveWindowLocation(double height, double width, double top, double left)
+        {
+            // TODO Should these updates (also) be done in memory? Do we need to broadcast the change?
+            applicationRepository.UpdatePreference(PreferenceName.APPLICATION_HEIGHT, height.ToString());
+            applicationRepository.UpdatePreference(PreferenceName.APPLICATION_WIDTH, width.ToString());
+            applicationRepository.UpdatePreference(PreferenceName.APPLICATION_POSITION_TOP, top.ToString());
+            applicationRepository.UpdatePreference(PreferenceName.APPLICATION_POSITION_LEFT, left.ToString());
+        }
     }
 }

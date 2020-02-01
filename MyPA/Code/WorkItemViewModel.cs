@@ -56,39 +56,7 @@ namespace MyPA.Code
             set
             {
                 _selectedWorkItem = value;
-
-/*                if (_selectedWorkItem != null) // If no WorkItem was selected before...
-                {
-                    // Check if save is required for the currently selected item before changing.
-                    if (_selectedWorkItem.WorkItemID == -1)
-                    {
-                        Console.WriteLine("Attempting INSERT of WI");
-                        workItemRepository.InsertWorkItem(_selectedWorkItem);
-                        var list = GetWorkItemStatuses(true, true).ToArray(); // Method will only return one value when (true, true)
-                        var wise = new WorkItemStatusEntry(_selectedWorkItem.WorkItemID.Value, list[0].WorkItemStatusID, 0, GetWorkItemStatus(list[0].WorkItemStatusID).StatusLabel);
-                        workItemRepository.InsertWorkItemStatusEntry(wise);
-                        _selectedWorkItem.CurrentWorkItemStatusEntry = wise;
-                        ActiveWorkItems.Add(_selectedWorkItem);
-                    }
-                    else
-                    {
-                        Console.WriteLine("Attempting UPDATE of WI");
-                        workItemRepository.UpdateWorkItem(_selectedWorkItem);
-                    }
-                }
-
-                _selectedWorkItem = value;
-                if (_selectedWorkItem.CurrentWorkItemStatusEntry == null)
-                {
-                    // Create a new default active version
-                    var list = GetWorkItemStatuses(true, true).ToArray(); // Method will only return one value when (true, true)
-                    _selectedWorkItem.CurrentWorkItemStatusEntry = new WorkItemStatusEntry(-1, list[0].WorkItemStatusID, 0, GetWorkItemStatus(list[0].WorkItemStatusID).StatusLabel);
-                }
-                _selectedWorkItemStatus = GetWorkItemStatus(_selectedWorkItem.CurrentWorkItemStatusEntry.WorkItemStatusID);*/
-                
                 OnPropertyChanged("");
-                
-//                Console.WriteLine($"Selection made {_selectedWorkItem.Title}, has a WorkItemStatus of {_selectedWorkItem.CurrentWorkItemStatusEntry.WorkItemStatusID}");
             }
         }
 
@@ -294,13 +262,14 @@ namespace MyPA.Code
             WorkItemStatusEntry lastItem = _selectedWorkItem.CurrentWorkItemStatusEntry;
             double secondsDifferent = (DateTime.Now - lastItem.CreationDateTime).TotalSeconds;
             double period = GetAppPreferenceValueAsDouble(PreferenceName.WORK_ITEM_STATUS_SET_WINDOW_SECONDS);
-            if (secondsDifferent < period)
+            if (secondsDifferent <= period)
             {
                 workItemRepository.UpdateWorkItemStatusEntry(wise);
                 // Copy the values over (update the existing item instead of recreating).
                 lastItem.StatusLabel = wise.StatusLabel;
                 lastItem.CompletionAmount = wise.CompletionAmount;
                 lastItem.WorkItemStatusID = wise.WorkItemStatusID;
+                _selectedWorkItem.CurrentWorkItemStatusEntry = lastItem;
             }
             else
             {
@@ -490,6 +459,18 @@ namespace MyPA.Code
             ActiveWorkItems.Add(_selectedWorkItem);
 
             AppMode = ApplicationMode.EDIT_MODE;
+        }
+
+        public bool CanDueDateBeChanged
+        {
+            get
+            {
+                if (SelectedWorkItemStatus == null)
+                    return true;
+                else 
+                    return SelectedWorkItemStatus.IsConsideredActive;
+            }
+
         }
 
         public bool WorkItemReadyForSave()
