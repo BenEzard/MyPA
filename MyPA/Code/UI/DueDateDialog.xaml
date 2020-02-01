@@ -63,7 +63,7 @@ Height="470" Width="300">
             Grid.Column="0" Grid.Row="5" Grid.ColumnSpan="2"
             MinLines="5" />
             <StackPanel Grid.Column="0" Grid.Row="7" Grid.ColumnSpan="2" Orientation="Horizontal" HorizontalAlignment="Right">
-                <Button Name="CancelButton" 
+                <Button Name="CancelButton"
                 Padding="5" Margin="5,5,5,0" Height="28" VerticalAlignment="Top">
                     <StackPanel Orientation="Horizontal" Margin="5,0,5,0">
                         <Image Source="../../Images/cancel.png" Width="26" />

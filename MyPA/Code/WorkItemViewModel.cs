@@ -150,6 +150,7 @@ namespace MyPA.Code
                     lastItem.StatusLabel = wise.StatusLabel;
                     lastItem.CompletionAmount = wise.CompletionAmount;
                     lastItem.WorkItemStatusID = wise.WorkItemStatusID;
+                    _selectedWorkItem.CurrentWorkItemStatusEntry = lastItem;
                 }
                 else
                 {
