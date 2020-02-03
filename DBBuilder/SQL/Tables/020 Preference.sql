@@ -11,7 +11,7 @@
 INSERT INTO Preference ([Name], [AppliesTo], [Value], DefaultValue, [Description], UserCanEdit) 
 VALUES	/* Application Values - Non configurable */
 		('APPLICATION_NAME', 'Application;', 'My PA', 'My PA', 'The name of the Application', 'N'),
-		('APPLICATION_VERSION', 'Application;', '0.3.1', '0.3.1', 'The version number of the Application', 'N'),
+		('APPLICATION_VERSION', 'Application;', '0.1.0', '0.1.0', 'The version number of the Application', 'N'),
 
 		/* Application Values - Configurable */
 		('APPLICATION_POSITION_LEFT', 'Application;', '100', '100', 'The window''s location (left)', 'Y'),
