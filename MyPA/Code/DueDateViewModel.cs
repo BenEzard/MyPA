@@ -44,7 +44,7 @@ namespace MyPA.Code
             set
             {
                 _currentSelectedDate = value;
-                GenerateDueDateTime();
+                GenerateDueDateTimeFromValues();
                 OnPropertyChanged("");
             }
         }
@@ -134,7 +134,7 @@ namespace MyPA.Code
             set
             {
                 _selectedHourString = value;
-                GenerateDueDateTime();
+                GenerateDueDateTimeFromValues();
                 OnPropertyChanged("");
             }
         }
@@ -149,7 +149,7 @@ namespace MyPA.Code
             set
             {
                 _selectedMinuteString = value;
-                GenerateDueDateTime();
+                GenerateDueDateTimeFromValues();
                 OnPropertyChanged("");
             }
         }
@@ -301,6 +301,10 @@ namespace MyPA.Code
         /// <returns></returns>
         public DateTime GetNextAcceptableDate(DateTime testDate)
         {
+            // Check if it's been loaded or not yet.
+            if (NonSelectableDates.Count == 0)
+                CalculateNonSelectableDates();
+
             DateTime rValue = testDate;
 
             while (_nonSelectableDates.Contains(rValue.Date)) {
@@ -310,9 +314,25 @@ namespace MyPA.Code
         }
 
         /// <summary>
+        /// Generates a due date based on the defaults and eligible dates.
+        /// </summary>
+        /// <returns></returns>
+        public DateTime GenerateDefaultDueDate()
+        {
+            int defaultDays = GetAppPreferenceValueAsInt(PreferenceName.DEFAULT_WORKITEM_LENGTH_DAYS);
+            int defaultHour = GetAppPreferenceValueAsInt(PreferenceName.DEFAULT_WORKITEM_COB_HOURS);
+            int defaultMins = GetAppPreferenceValueAsInt(PreferenceName.DEFAULT_WORKITEM_COB_MINS);
+
+            DateTime rValue = DateTime.Now.Date.AddDays(defaultDays).AddHours(defaultHour).AddMinutes(defaultMins);
+            rValue = GetNextAcceptableDate(rValue);
+
+            return rValue;
+        }
+
+        /// <summary>
         /// Using the values in the dialog (Calendar, SelectedHour and SelectedMinute) , creates a DateTime value.
         /// </summary>
-        private void GenerateDueDateTime()
+        private void GenerateDueDateTimeFromValues()
         {
             DateTime dateTime = GetNextAcceptableDate(_currentSelectedDate).Date;
             dateTime = dateTime.AddHours(SelectedHour);
@@ -340,7 +360,7 @@ namespace MyPA.Code
         {
             NewDueDate = new WorkItemDueDate(_originalData.WorkItemID, _currentSelectedDate, _changeReason);
 
-            int dueDateGracePeriod = GetAppPreferenceValueAsInt(PreferenceName.DUE_DATE_SET_WINDOW_SECONDS);
+/*            int dueDateGracePeriod = GetAppPreferenceValueAsInt(PreferenceName.DUE_DATE_SET_WINDOW_SECONDS);
 
             // Check the length of time between this and the last DueDate change.
             double secondsSinceChange = (NewDueDate.CreationDateTime - _originalData.CreationDateTime).TotalSeconds;
@@ -351,7 +371,7 @@ namespace MyPA.Code
             else
             {
                 workItemRepository.InsertWorkItemDueDate(NewDueDate);
-            }
+            }*/
             Messenger.Default.Send(NewDueDate);
 
             // Replace the Original data with the now data (in case there's another change)

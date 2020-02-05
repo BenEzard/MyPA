@@ -217,11 +217,29 @@ namespace MyPA.Code
             {
                 AppMode = ApplicationMode.ADD_MODE;
                 SelectedWorkItem = new WorkItem();
+                DateTime newDueDate = new DueDateViewModel().GenerateDefaultDueDate();
+                var widd = new WorkItemDueDate(newDueDate, "Initial WorkItem creation.");
+                SelectedWorkItem.CurrentWorkItemDueDate = widd; // Not saved yet because no WorkItemID
             }
         }
 
         private void ReceivedWorkItemDueDateChange(WorkItemDueDate wiDueDate)
         {
+            WorkItemDueDate _originalData = _selectedWorkItem.CurrentWorkItemDueDate;
+
+            int dueDateGracePeriod = GetAppPreferenceValueAsInt(PreferenceName.DUE_DATE_SET_WINDOW_SECONDS);
+
+            // Check the length of time between this and the last DueDate change.
+            double secondsSinceChange = (wiDueDate.CreationDateTime - _originalData.CreationDateTime).TotalSeconds;
+            if (secondsSinceChange <= dueDateGracePeriod)
+            {
+                workItemRepository.UpdateWorkItemDueDate(wiDueDate);
+            }
+            else
+            {
+                workItemRepository.InsertWorkItemDueDate(wiDueDate);
+            }
+
             SelectedWorkItem.CurrentWorkItemDueDate = wiDueDate;
         }
 
@@ -366,8 +384,9 @@ namespace MyPA.Code
             AppMode = ApplicationMode.ADD_MODE;
 
             var wi = new WorkItem();
-            var widd = new WorkItemDueDate(DateTime.Now.Date);
+            var widd = new WorkItemDueDate(DateTime.Now.Date, "Initial WorkItem creation.");
             SelectedWorkItem = wi;
+            //SelectedWorkItem.CurrentWorkItemDueDate = widd;
             //SelectedWorkItem.CurrentWorkItemDueDate = widd;
             ReceivedWorkItemDueDateChange(widd);
         }
@@ -455,8 +474,16 @@ namespace MyPA.Code
             var wise = new WorkItemStatusEntry(workItemID, wis.WorkItemStatusID, 0, wis.StatusLabel);
             workItemRepository.InsertWorkItemStatusEntry(wise);
             _selectedWorkItem.CurrentWorkItemStatusEntry = wise;
-            int daysToComplete = GetAppPreferenceValueAsInt(PreferenceName.DEFAULT_WORKITEM_LENGTH_DAYS);
-//            workItemRepository.InsertWorkItemDueDate(new WorkItemDueDate(workItemID, DateTime.Now.AddDays(daysToComplete), "Initial work item creation."));
+            //            int daysToComplete = GetAppPreferenceValueAsInt(PreferenceName.DEFAULT_WORKITEM_LENGTH_DAYS);
+            //            workItemRepository.InsertWorkItemDueDate(new WorkItemDueDate(workItemID, DateTime.Now.AddDays(daysToComplete), "Initial work item creation."));
+
+//            WorkItemDueDate dueDate = _selectedWorkItem.CurrentWorkItemDueDate;
+            if (_selectedWorkItem.CurrentWorkItemDueDate.WorkItemDueDateID < 1)
+            {
+                _selectedWorkItem.CurrentWorkItemDueDate.WorkItemID = workItemID;
+                workItemRepository.InsertWorkItemDueDate(_selectedWorkItem.CurrentWorkItemDueDate);
+            }
+
             ActiveWorkItems.Add(_selectedWorkItem);
 
             AppMode = ApplicationMode.EDIT_MODE;

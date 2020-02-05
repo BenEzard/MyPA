@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MyPA.Code.UI.Util;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 
@@ -103,10 +104,11 @@ namespace MyPA.Code.Data.Models
             }
         }
 
-        public double DaysSinceCreation { 
+        public string TimeSinceCreationString { 
             get
             {
-                return (DateTime.Now - CreationDateTime).TotalDays;
+                string rValue = DateMethods.GenerateDateDifferenceLabel(CreationDateTime, DateTime.Now, true);
+                return rValue;
             }
         }
 

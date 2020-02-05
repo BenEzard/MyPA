@@ -14,9 +14,10 @@ namespace MyPA.Code.Data.Models
             WorkItemID = workItemID;
         }
 
-        public WorkItemDueDate(DateTime dueDate)
+        public WorkItemDueDate(DateTime dueDate, string changeReason)
         {
             DueDateTime = dueDate;
+            ChangeReason = changeReason;
         }
 
         public WorkItemDueDate(int workItemDueDateID, int workItemID)

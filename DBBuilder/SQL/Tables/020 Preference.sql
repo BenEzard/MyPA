@@ -11,7 +11,7 @@
 INSERT INTO Preference ([Name], [AppliesTo], [Value], DefaultValue, [Description], UserCanEdit) 
 VALUES	/* Application Values - Non configurable */
 		('APPLICATION_NAME', 'Application;', 'My PA', 'My PA', 'The name of the Application', 'N'),
-		('APPLICATION_VERSION', 'Application;', '0.1.0', '0.1.0', 'The version number of the Application', 'N'),
+		('APPLICATION_VERSION', 'Application;', '0.1.3', '0.1.2', 'The version number of the Application', 'N'),
 
 		/* Application Values - Configurable */
 		('APPLICATION_POSITION_LEFT', 'Application;', '100', '100', 'The window''s location (left)', 'Y'),
@@ -22,7 +22,7 @@ VALUES	/* Application Values - Non configurable */
 
 		/* Due Date variables */
 		('LOAD_STALE_DAYS', 'WorkItem;', '100', '100', 'Load Work Items that were completed this many days ago.', 'Y'),
-		('DEFAULT_WORKITEM_LENGTH_DAYS', 'WorkItem;DueDate;', '35', '5', 'The default number of days that should be added to complete a WorkItem.', 'Y'),
+		('DEFAULT_WORKITEM_LENGTH_DAYS', 'WorkItem;DueDate;', '33', '5', 'The default number of days that should be given to complete a WorkItem.', 'Y'),
 		('DEFAULT_WORKITEM_COB_HOURS', 'WorkItem;DueDate;', '16', '16', 'The default Due Date Close of Business (COB) Hours (24hr clock).', 'Y'),
 		('DEFAULT_WORKITEM_COB_MINS', 'WorkItem;DueDate;', '0', '0', 'The default Due Date Close of Business (COB) Minutes.', 'Y'),
 		('DUE_DATE_SET_WINDOW_SECONDS', 'WorkItem;DueDate;', '60', '60', 'If the Due Date is altered within this time period of setting it, don''t record it as a change.', 'Y'),
@@ -39,18 +39,19 @@ VALUES	/* Application Values - Non configurable */
 		('END_OF_BUSINESS_DAY', 'WorkItem;DueDate;', '22', '18', 'End of the business day (in 24 hour time e.g. HH).', 'Y'),
 		('DUE_DATE_MINUTE_INCREMENTS', 'WorkItem;DueDate;', '5', '1', 'Increments on which a Due Date (Minutes) can be set.', 'Y'),
 		('DUE_DATE_REQUIRE_CHANGE_REASON', 'DueDate;', '0', '0', 'Should a Due Date Change Reason be required?', 'Y'),
+		('USE_OVERDUE_COLOURING', 'WorkItem;', 'Red', 'Red', 'Should a Due Date display in red when overdue?', 'Y'),
 
 		/* Work Item Status */
-		('STATUS_COMPLETE_TO_ACTIVE', 'WorkItem;', '75', '75', 'When a WorkItem is moved from complete-to-active, set the Completion percent.', 'Y'),
+		('STATUS_COMPLETE_TO_ACTIVE', 'WorkItem;', '75', '75', 'When a WorkItem is moved from complete-to-active, set the Completion percent.', 'Y');
 
 		/* Journals */
-		('CONFIRM_JOURNAL_DELETION', 'WorkItemJournal;', '1', '1', 'Should a Journal Entry deletion be confirmed?', 'Y'),
+		/*('CONFIRM_JOURNAL_DELETION', 'WorkItemJournal;', '1', '1', 'Should a Journal Entry deletion be confirmed?', 'Y'),
 		('JOURNAL_ORDERING', 'WorkItemJournal;', 'bottom', 'bottom', 'Should new Journal Entries appear at bottom or top of list?', 'Y'),
 
-		('DELETE_OPTION', 'WorkItemJournal;', 'logically (leave trace)', 'logically (leave trace)', 'Should deletion be logical or physical. Options logically (leave trace), physically (permanent)', 'Y'),
+		('DELETE_OPTION', 'WorkItemJournal;', 'logically (leave trace)', 'logically (leave trace)', 'Should deletion be logical or physical. Options logically (leave trace), physically (permanent)', 'Y'),*/
 
 		/* Backup options */
-		('DATA_EXPORT_LAST_DONE', 'Application;', '2019-09-13', '2019-09-13', 'When the backup was last done (a date)', 'N'),
+		/*('DATA_EXPORT_LAST_DONE', 'Application;', '2019-09-13', '2019-09-13', 'When the backup was last done (a date)', 'N'),
 		('DATA_EXPORT_LAST_DIRECTORY', 'Application;', 'C:\', '', 'The directory where the last export file was chosen from', 'N'),
 		('DATA_IMPORT_LAST_DIRECTORY', 'Application;', 'C:\', '', 'The directory where the last import file was chosen from', 'N'),
 		('DATA_EXPORT_AUTOMATICALLY', 'Application;', '0', '1', 'Should a backup be done automatically? (1 or 0)', 'Y'),
@@ -66,5 +67,4 @@ VALUES	/* Application Values - Non configurable */
 		('DATA_EXPORT_SAME_DAY_OVERWRITE', 'Application;', '1', '1', 'Overwrite the backup if from the same day. Options are 0 or 1', 'Y'),
 		('DATA_EXPORT_COPY_LOCATION', 'Application;', 'D:\Work\MyWorkTracker Copy', 'D:\Work\MyWorkTracker Copy', 'Location where backup files should be copied (duplicated) to.', 'Y'),
 		('DATA_EXPORT_AVAILABLE_VERSIONS', 'Application;', '0.3.1,0.3.0', '0.3.1,0.3.0', 'Available Export options (comma separated)', 'N'),
-		('DATA_EXPORT_DEFAULT_VERSION', 'Application;', '0.3.1', '0.3.1', 'Default Export version', 'Y')
-		;
+		('DATA_EXPORT_DEFAULT_VERSION', 'Application;', '0.3.1', '0.3.1', 'Default Export version', 'Y')*/

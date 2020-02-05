@@ -116,6 +116,7 @@
     </Compile>
     <Compile Include="Code\UI\Util\BooleanToVisibilityConverter.cs" />
     <Compile Include="Code\UI\Util\CollectionMethods.cs" />
+    <Compile Include="Code\UI\Util\DateMethods.cs" />
     <Compile Include="Code\UI\Util\RelayCommand.cs" />
     <Compile Include="Code\UI\WorkItemUserControl.xaml.cs">
       <DependentUpon>WorkItemUserControl.xaml</DependentUpon>
