@@ -20,7 +20,7 @@ namespace MyPA.Code.Data.Models
             }
         }
 
-        public DateTime CreationDateTime { get; set; }
+        public DateTime? CreationDateTime { get; set; }
         public DateTime? ModificationDateTime { get; set; }
         public DateTime? DeletionDateTime { get; set; }
 

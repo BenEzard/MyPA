@@ -11,7 +11,7 @@
 INSERT INTO Preference ([Name], [AppliesTo], [Value], DefaultValue, [Description], UserCanEdit) 
 VALUES	/* Application Values - Non configurable */
 		('APPLICATION_NAME', 'Application;', 'My PA', 'My PA', 'The name of the Application', 'N'),
-		('APPLICATION_VERSION', 'Application;', '0.1.3', '0.1.2', 'The version number of the Application', 'N'),
+		('APPLICATION_VERSION', 'Application;', '0.1.4', '0.1.2', 'The version number of the Application', 'N'),
 
 		/* Application Values - Configurable */
 		('APPLICATION_POSITION_LEFT', 'Application;', '100', '100', 'The window''s location (left)', 'Y'),
@@ -19,6 +19,7 @@ VALUES	/* Application Values - Non configurable */
 		('APPLICATION_WIDTH', 'Application;', '600', '600', 'The window''s size (width)', 'Y'),
 		('APPLICATION_HEIGHT', 'Application;', '750', '750', 'The window''s size (height)', 'Y'),
 		('SAVE_WINDOW_COORDS_ON_EXIT', 'Application;', '1', '1', 'Should the window''s location and size be saved when the application exits?', 'Y'),
+		('LOGICAL_DELETE', 'Application;', '1', '1', 'Should all deletes be done logically?', 'Y'),
 
 		/* Due Date variables */
 		('LOAD_STALE_DAYS', 'WorkItem;', '100', '100', 'Load Work Items that were completed this many days ago.', 'Y'),
@@ -43,6 +44,7 @@ VALUES	/* Application Values - Non configurable */
 
 		/* Work Item Status */
 		('STATUS_COMPLETE_TO_ACTIVE', 'WorkItem;', '75', '75', 'When a WorkItem is moved from complete-to-active, set the Completion percent.', 'Y');
+
 
 		/* Journals */
 		/*('CONFIRM_JOURNAL_DELETION', 'WorkItemJournal;', '1', '1', 'Should a Journal Entry deletion be confirmed?', 'Y'),

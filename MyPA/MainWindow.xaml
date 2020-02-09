@@ -36,6 +36,22 @@
                         </Image>
                     </StackPanel>
                 </Button>
+                <Button Name="DeleteWorkItemButton" Command="{Binding WorkItemDeletingCommand}"
+                        VerticalAlignment="Bottom">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="Images\report_delete.png" Width="26" ToolTip="Delete Work Item">
+                            <Image.Style>
+                                <Style TargetType="Image">
+                                    <Style.Triggers>
+                                        <Trigger Property="IsEnabled" Value="False">
+                                            <Setter Property="Opacity" Value="0.5" />
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Image.Style>
+                        </Image>
+                    </StackPanel>
+                </Button>
             </ToolBar>
         </ToolBarTray>
 

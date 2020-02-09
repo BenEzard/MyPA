@@ -57,7 +57,7 @@ namespace MyPA.Code.Data.Services
                                 wise.WorkItemStatusID = Convert.ToInt32(reader["WorkItemStatus_ID"]);
                                 wise.StatusLabel = (string)reader["wisStatusLabel"];
                                 wise.CompletionAmount = Convert.ToInt32(reader["CompletionAmount"]);
-                                wise.CreationDateTime = DateTime.Parse(reader["wisCreationDateTime"].ToString()); ;
+                                wise.CreationDateTime = DateTime.Parse(reader["wisCreationDateTime"].ToString());
 
                                 DateTime? wiseModificationDateTime = null;
                                 if (reader["wisModificationDateTime"] != DBNull.Value)
@@ -151,7 +151,7 @@ namespace MyPA.Code.Data.Services
                     cmd.Parameters.AddWithValue("@workItemID", workItemDueDate.WorkItemID);
                     cmd.Parameters.AddWithValue("@dueDate", workItemDueDate.DueDateTime);
                     cmd.Parameters.AddWithValue("@changeReason", workItemDueDate.ChangeReason);
-                    cmd.Parameters.AddWithValue("@creation", workItemDueDate.CreationDateTime);
+                    cmd.Parameters.AddWithValue("@creation", workItemDueDate.CreationDateTime ?? DateTime.Now);
                     cmd.ExecuteNonQuery();
 
                     // Get the identity value (to return)
@@ -213,6 +213,8 @@ namespace MyPA.Code.Data.Services
                     cmd.Parameters.AddWithValue("@workItemID", workItem.WorkItemID);
                     cmd.Parameters.AddWithValue("@modTime", DateTime.Now);
                     cmd.ExecuteNonQuery();
+
+                    Console.WriteLine("in UpdateWorkItem");
                 }
                 connection.Close();
             }
@@ -352,6 +354,102 @@ namespace MyPA.Code.Data.Services
             }
 
             return rValue;
+        }
+
+        /// <summary>
+        /// Delete a WorkItem, either logically or physically.
+        /// </summary>
+        /// <param name="workItemID"></param>
+        /// <param name="logicalDelete"></param>
+        public void DeleteWorkItem(int workItemID, bool logicalDelete)
+        {
+            using (var connection = new SQLiteConnection(dbConnectionString))
+            {
+                using (var cmd = new SQLiteCommand(connection))
+                {
+                    connection.Open();
+                    if (logicalDelete)
+                    {
+                        cmd.CommandText = "UPDATE WorkItem" +
+                            " SET DeletionDateTime = @deleteDate" +
+                            " WHERE WorkItem_ID = @workItemID";
+                        cmd.Parameters.AddWithValue("@deleteDate", DateTime.Now);
+                        cmd.Parameters.AddWithValue("@workItemID", workItemID);
+                    }
+                    else
+                    {
+                        cmd.CommandText = "DELETE WorkItem" +
+                            " WHERE WorkItem_ID = @workItemID";
+                        cmd.Parameters.AddWithValue("@workItemID", workItemID);
+                    }
+                    cmd.ExecuteNonQuery();
+                }
+                connection.Close();
+            }
+        }
+
+        /// <summary>
+        /// Delete a WorkItemStatusEntry, either logically or physically.
+        /// </summary>
+        /// <param name="workItemID"></param>
+        /// <param name="logicalDelete"></param>
+        public void DeleteWorkItemStatusEntry(int workItemID, bool logicalDelete)
+        {
+            using (var connection = new SQLiteConnection(dbConnectionString))
+            {
+                using (var cmd = new SQLiteCommand(connection))
+                {
+                    connection.Open();
+                    if (logicalDelete)
+                    {
+                        cmd.CommandText = "UPDATE WorkItemStatusEntry" +
+                            " SET DeletionDateTime = @deleteDate" +
+                            " WHERE WorkItem_ID = @workItemID";
+                        cmd.Parameters.AddWithValue("@deleteDate", DateTime.Now);
+                        cmd.Parameters.AddWithValue("@workItemID", workItemID);
+                    }
+                    else
+                    {
+                        cmd.CommandText = "DELETE WorkItemStatusEntry" +
+                            " WHERE WorkItem_ID = @workItemID";
+                        cmd.Parameters.AddWithValue("@workItemID", workItemID);
+                    }
+                    cmd.ExecuteNonQuery();
+                }
+                connection.Close();
+            }
+        }
+
+        /// <summary>
+        /// Delete a WorkItemStatusEntry, either logically or physically.
+        /// </summary>
+        /// <param name="workItemID"></param>
+        /// <param name="logicalDelete"></param>
+        public void DeleteWorkItemDueDate(int workItemID, bool logicalDelete)
+        {
+            using (var connection = new SQLiteConnection(dbConnectionString))
+            {
+                using (var cmd = new SQLiteCommand(connection))
+                {
+                    connection.Open();
+                    if (logicalDelete)
+                    {
+                        cmd.CommandText = "UPDATE WorkItemDueDate" +
+                            " SET DeletionDateTime = @deleteDate" +
+                            " WHERE WorkItem_ID = @workItemID";
+                        cmd.Parameters.AddWithValue("@deleteDate", DateTime.Now);
+                        cmd.Parameters.AddWithValue("@workItemID", workItemID);
+                    }
+                    else
+                    {
+                        cmd.CommandText = "DELETE WorkItemDueDate" +
+                            " WHERE WorkItem_ID = @workItemID";
+                        cmd.Parameters.AddWithValue("@workItemID", workItemID);
+                    }
+                    cmd.ExecuteNonQuery();
+                }
+                connection.Close();
+            }
         }
     }
 }

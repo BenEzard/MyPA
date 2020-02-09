@@ -6,6 +6,9 @@ using System.Collections.ObjectModel;
 using System.Windows.Input;
 using MyPA.Code.UI.Util;
 using System.Linq;
+using System.Windows.Data;
+using System.ComponentModel;
+using MyPA.Code.Util;
 
 namespace MyPA.Code
 {
@@ -20,7 +23,7 @@ namespace MyPA.Code
         /// An ObservableCollection of all 'active' WorkItems.
         /// (Potentially this will change to be all work items, if I can work out how to filter the data well).
         /// </summary>
-        public ObservableCollection<WorkItem> ActiveWorkItems { get; set; } = new ObservableCollection<WorkItem>();
+        public ObservableCollection<WorkItem> WorkItems { get; set; } = new ObservableCollection<WorkItem>();
 
         /// <summary>
         /// A list of all WorkItemStatuses.
@@ -28,7 +31,7 @@ namespace MyPA.Code
         /// </summary>
         public List<WorkItemStatus> WorkItemStatuses { get; set; }
 
-        private WorkItem _selectedWorkItem = null;
+        public List<WorkItemStatusFilter> WorkItemStatusFilter { get; set; } = new List<WorkItemStatusFilter>();
 
         /// <summary>
         /// Return a WorkItemStatus by the given WorkItemStatusID
@@ -46,17 +49,27 @@ namespace MyPA.Code
             return rValue;
         }
 
-
+        private WorkItem _selectedWorkItem = null;
         /// <summary>
         /// The currently selected WorkItem.
         /// </summary>
         public WorkItem SelectedWorkItem
         {
-            get { return _selectedWorkItem; }
+            get => _selectedWorkItem;
             set
             {
+                UpdateWorkItem(_selectedWorkItem);
                 _selectedWorkItem = value;
+                Console.WriteLine($"Number of due dates {_selectedWorkItem.WorkItemDueDateCount()}");
                 OnPropertyChanged("");
+            }
+        }
+
+        public void UpdateWorkItem(WorkItem workItem)
+        {
+            if (workItem != null)
+            {
+                workItemRepository.UpdateWorkItem(workItem);
             }
         }
 
@@ -64,15 +77,17 @@ namespace MyPA.Code
         /// A VM variable mirroring SelectedWorkItem.Title; bound by the view.
         /// </summary>
         public string Title {
-            get {
-                string rValue = "";
+            get
+            {
                 if (_selectedWorkItem != null)
-                    rValue = _selectedWorkItem.Title;
-                return rValue; 
+                    return _selectedWorkItem.Title;
+                else 
+                    return "";
             }
             set {
                 _selectedWorkItem.Title = value;
                 OnPropertyChanged("");
+                _workItemOverview.View.Refresh();
             }
         }
 
@@ -95,7 +110,38 @@ namespace MyPA.Code
             }
         }
 
-        
+        /// <summary>
+        /// Return the maximum Modified DateTime for the selected Work Item, analysing all aspects of the WorkItem.
+        /// </summary>
+        public DateTime? SelectedWorkItemModifiedDateTime
+        {
+            get
+            {
+                if (_selectedWorkItem == null)
+                    return null;
+
+                List<DateTime?> dates = new List<DateTime?>();
+                if (_selectedWorkItem.CreationDateTime.HasValue)
+                    dates.Add(_selectedWorkItem.CreationDateTime);
+                if (_selectedWorkItem.ModificationDateTime.HasValue)
+                    dates.Add(_selectedWorkItem.ModificationDateTime);
+                if (_selectedWorkItem.CurrentWorkItemDueDate != null)
+                {
+                    if (_selectedWorkItem.CurrentWorkItemDueDate.CreationDateTime.HasValue)
+                        dates.Add(_selectedWorkItem.CurrentWorkItemDueDate.CreationDateTime);
+                    if (_selectedWorkItem.CurrentWorkItemDueDate.ModificationDateTime.HasValue)
+                        dates.Add(_selectedWorkItem.CurrentWorkItemDueDate.ModificationDateTime);
+                }
+                if (_selectedWorkItem.CurrentWorkItemStatusEntry != null)
+                {
+                    if (_selectedWorkItem.CurrentWorkItemStatusEntry.CreationDateTime.HasValue)
+                        dates.Add(_selectedWorkItem.CurrentWorkItemStatusEntry.CreationDateTime);
+                    if (_selectedWorkItem.CurrentWorkItemStatusEntry.ModificationDateTime.HasValue)
+                        dates.Add(_selectedWorkItem.CurrentWorkItemStatusEntry.ModificationDateTime);
+                }
+                return dates.Max();
+            }
+        }
 
         /*        public void NotSure()
                 {
@@ -114,6 +160,11 @@ namespace MyPA.Code
                 else
                     return true;
             }
+        }
+
+        public bool IsAWorkItemSelected()
+        {
+            return IsWorkItemSelected;
         }
 
         public int SelectedWorkItemCompletion
@@ -141,7 +192,7 @@ namespace MyPA.Code
 
                 // Check to see if the latest WISE was created within the last x seconds; if so, update instead of insert.
                 WorkItemStatusEntry lastItem = _selectedWorkItem.CurrentWorkItemStatusEntry;
-                double secondsDifferent = (DateTime.Now - lastItem.CreationDateTime).TotalSeconds;
+                double secondsDifferent = (DateTime.Now - lastItem.CreationDateTime.Value).TotalSeconds;
                 double period = GetAppPreferenceValueAsDouble(PreferenceName.WORK_ITEM_STATUS_SET_WINDOW_SECONDS);
                 if (secondsDifferent < period)
                 {
@@ -184,6 +235,9 @@ namespace MyPA.Code
             }
         }
 
+        /// <summary>
+        /// WorkItemViewModel constructor.
+        /// </summary>
         public WorkItemViewModel()
         {
             ApplicationViewModel appViewModel = new ApplicationViewModel();
@@ -191,11 +245,17 @@ namespace MyPA.Code
             // Load Preferences
             Preferences = workItemRepository.GetWorkItemPreferences();
 
-            Messenger.Default.Register<AppAction>(this, RequestAddNewWorkItem);
+            Messenger.Default.Register<AppAction>(this, AppActionReceived);
             Messenger.Default.Register<WorkItemDueDate>(this, ReceivedWorkItemDueDateChange);
 
             LoadWorkItemStatuses();
+
             LoadWorkItems();
+
+            _workItemOverview = new CollectionViewSource();
+            _workItemOverview.Source = WorkItems;
+            _workItemOverview.Filter += WorkItemOverviewFilter;
+
             OnPropertyChanged("");
         }
 
@@ -211,18 +271,43 @@ namespace MyPA.Code
             return wise;
         }
 
-        private void RequestAddNewWorkItem(AppAction action)
+        /// <summary>
+        /// Process an AppAction that has been received.
+        /// </summary>
+        /// <param name="action"></param>
+        private void AppActionReceived(AppAction action)
         {
-            if (action == AppAction.CREATING_WORK_ITEM)
+            switch (action)
             {
-                AppMode = ApplicationMode.ADD_MODE;
-                SelectedWorkItem = new WorkItem();
-                DateTime newDueDate = new DueDateViewModel().GenerateDefaultDueDate();
-                var widd = new WorkItemDueDate(newDueDate, "Initial WorkItem creation.");
-                SelectedWorkItem.CurrentWorkItemDueDate = widd; // Not saved yet because no WorkItemID
+                case AppAction.CREATING_WORK_ITEM:
+                    RequestAddNewWorkItem();
+                    break;
+                case AppAction.APPLICATION_CLOSING:
+                    UpdateWorkItem(_selectedWorkItem);
+                    break;
+                case AppAction.DELETING_WORK_ITEM:
+                    DeleteWorkItem(_selectedWorkItem);
+                    break;
             }
         }
 
+        /// <summary>
+        /// Begin the creation of a new Work Item. 
+        /// (Note that this is not saved at this time).
+        /// </summary>
+        private void RequestAddNewWorkItem()
+        {
+            AppMode = ApplicationMode.ADD_MODE;
+            SelectedWorkItem = new WorkItem();
+            DateTime newDueDate = new DueDateViewModel().GenerateDefaultDueDate();
+            var widd = new WorkItemDueDate(newDueDate, "Initial WorkItem creation.");
+            SelectedWorkItem.CurrentWorkItemDueDate = widd; // Not saved yet because no WorkItemID
+        }
+
+        /// <summary>
+        /// Process a WorkItemDueDate change.
+        /// </summary>
+        /// <param name="wiDueDate"></param>
         private void ReceivedWorkItemDueDateChange(WorkItemDueDate wiDueDate)
         {
             WorkItemDueDate _originalData = _selectedWorkItem.CurrentWorkItemDueDate;
@@ -230,7 +315,7 @@ namespace MyPA.Code
             int dueDateGracePeriod = GetAppPreferenceValueAsInt(PreferenceName.DUE_DATE_SET_WINDOW_SECONDS);
 
             // Check the length of time between this and the last DueDate change.
-            double secondsSinceChange = (wiDueDate.CreationDateTime - _originalData.CreationDateTime).TotalSeconds;
+            double secondsSinceChange = (wiDueDate.CreationDateTime.Value - _originalData.CreationDateTime.Value).TotalSeconds;
             if (secondsSinceChange <= dueDateGracePeriod)
             {
                 workItemRepository.UpdateWorkItemDueDate(wiDueDate);
@@ -250,7 +335,7 @@ namespace MyPA.Code
         {
             foreach (WorkItem wi in workItemRepository.GetWorkItems(GetAppPreferenceValueAsInt(PreferenceName.LOAD_STALE_DAYS)))
             {
-                ActiveWorkItems.Add(wi);
+                WorkItems.Add(wi);
             }
         }
 
@@ -279,7 +364,7 @@ namespace MyPA.Code
 
             // Check to see if the latest WISE was created within the last x seconds; if so, update instead of insert.
             WorkItemStatusEntry lastItem = _selectedWorkItem.CurrentWorkItemStatusEntry;
-            double secondsDifferent = (DateTime.Now - lastItem.CreationDateTime).TotalSeconds;
+            double secondsDifferent = (DateTime.Now - lastItem.CreationDateTime.Value).TotalSeconds;
             double period = GetAppPreferenceValueAsDouble(PreferenceName.WORK_ITEM_STATUS_SET_WINDOW_SECONDS);
             if (secondsDifferent <= period)
             {
@@ -300,10 +385,17 @@ namespace MyPA.Code
         /// <summary>
         /// Load all of the WorkItemStatuses.
         /// (This is the master-list of statuses, not as they relate to individual WorkItems).
+        /// Also loadsd WorkItemStatusFilter
         /// </summary>
         public void LoadWorkItemStatuses()
         {
             WorkItemStatuses = workItemRepository.GetWorkItemStatuses();
+
+            // Load WorkItemStatusFilter
+            foreach (WorkItemStatus wis in WorkItemStatuses)
+            {
+                WorkItemStatusFilter.Add(new WorkItemStatusFilter(wis.WorkItemStatusID, wis.StatusLabel));
+            }
         }
 
         #region ApplicationMode
@@ -352,7 +444,7 @@ namespace MyPA.Code
         {
             /*await*/
             workItemRepository.InsertWorkItem(workItem);
-            ActiveWorkItems.Add(workItem);
+            WorkItems.Add(workItem);
         }
 
         /*        public async void SaveWorkItem()
@@ -423,16 +515,16 @@ namespace MyPA.Code
         #endregion
 
         #region CancelWorkItemCreatingCommand
-        RelayCommand _workItemCamcelCreatingCommand;
+        RelayCommand _workItemCancelCreationCommand;
         public ICommand CancelWorkItemCreatingCommand
         {
             get
             {
-                if (_workItemCamcelCreatingCommand == null)
+                if (_workItemCancelCreationCommand == null)
                 {
-                    _workItemCamcelCreatingCommand = new RelayCommand(CancelWorkItemCreation, CanCancelNewWorkItem);
+                    _workItemCancelCreationCommand = new RelayCommand(CancelWorkItemCreation, CanCancelNewWorkItem);
                 }
-                return _workItemCamcelCreatingCommand;
+                return _workItemCancelCreationCommand;
             }
         }
 
@@ -449,6 +541,25 @@ namespace MyPA.Code
                 return false;
         }
         #endregion
+
+        /// <summary>
+        /// Delete a WorkItem
+        /// </summary>
+        public void DeleteWorkItem(WorkItem workItem)
+        {
+            if ((workItem == null) || (workItem.WorkItemID == null))
+                return;
+
+            Console.WriteLine("deletion");
+            int workItemID = workItem.WorkItemID.Value;
+            bool logicalDelete = GetAppPreferenceValueAsBool(PreferenceName.LOGICAL_DELETE);
+
+            workItemRepository.DeleteWorkItemDueDate(workItemID, logicalDelete);
+            workItemRepository.DeleteWorkItemStatusEntry(workItemID, logicalDelete);
+            workItemRepository.DeleteWorkItem(workItemID, logicalDelete);
+            WorkItems.Remove(_selectedWorkItem);
+            _workItemOverview.View.Refresh();
+        }
 
         RelayCommand _workItemSaveNewCommand;
         public ICommand WorkItemSaveNewCommand
@@ -484,7 +595,8 @@ namespace MyPA.Code
                 workItemRepository.InsertWorkItemDueDate(_selectedWorkItem.CurrentWorkItemDueDate);
             }
 
-            ActiveWorkItems.Add(_selectedWorkItem);
+            WorkItems.Add(_selectedWorkItem);
+            _workItemOverview.View.Refresh();
 
             AppMode = ApplicationMode.EDIT_MODE;
         }
@@ -531,5 +643,92 @@ namespace MyPA.Code
 
             return rValue;
         }
+
+        private CollectionViewSource _workItemOverview;
+        /// <summary>
+        /// This CollectionViewSource provides a way in which the WorkItems Collection can be filtered.
+        /// </summary>
+        public ICollectionView WorkItemOverview
+        {
+            get
+            {
+                return _workItemOverview.View;
+            }
+        }
+
+        private bool _workItemOverviewIsActiveFilter = true;
+        /// <summary>
+        /// Is the Overview panel (Work Item list) currently filtered to display only active statuses?
+        /// </summary>
+        public bool WorkItemOverviewIsActiveFilter
+        {
+            get => _workItemOverviewIsActiveFilter;
+            set
+            {
+                _workItemOverviewIsActiveFilter = value;
+                _workItemOverview.View.Refresh();
+                OnPropertyChanged("");
+            }
+        }
+
+        private bool _workItemOverviewIsClosedFilter = true;
+        /// <summary>
+        /// Is the Overview panel (Work Item list) currently filtered to display only closed statuses?
+        /// </summary>
+        public bool WorkItemOverviewIsClosedFilter
+        {
+            get => _workItemOverviewIsClosedFilter;
+            set
+            {
+                _workItemOverviewIsClosedFilter = value;
+                _workItemOverview.View.Refresh();
+                OnPropertyChanged("");
+            }
+        }
+
+        private string _workItemOverviewFilterText;
+        /// <summary>
+        /// Is the Overview panel (Work Item list) currently filtered to display only Work Items with the following text in title or description?
+        /// </summary>
+        public string WorkItemOverviewFilterText
+        {
+            get => _workItemOverviewFilterText;
+            set
+            {
+                _workItemOverviewFilterText = value;
+                _workItemOverview.View.Refresh();
+                OnPropertyChanged("");
+            }
+        }
+
+        /// <summary>
+        /// Filter the WorkItems that are currently being displayed in the overview list.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void WorkItemOverviewFilter(object sender, FilterEventArgs e)
+        {
+            // A true value on e.Accepted results in the item being DISPLAYED.
+
+            // Get each filter match
+            WorkItem workItem = e.Item as WorkItem;
+            bool textMatch = string.IsNullOrEmpty(WorkItemOverviewFilterText)
+                || workItem.Title.Contains(WorkItemOverviewFilterText, StringComparison.OrdinalIgnoreCase)
+                || workItem.Description.Contains(WorkItemOverviewFilterText, StringComparison.OrdinalIgnoreCase);
+            WorkItemStatus wis = GetWorkItemStatus(workItem.CurrentWorkItemStatusEntry.WorkItemStatusID);
+            bool isActiveMatch = _workItemOverviewIsActiveFilter && wis.IsConsideredActive;
+            bool isClosedMatch = _workItemOverviewIsClosedFilter && wis.IsConsideredActive == false;
+            //            bool isStatusFilter = 
+
+            if (textMatch && (isActiveMatch || isClosedMatch))
+            {
+                e.Accepted = true;
+            }
+            else
+            {
+                e.Accepted = false;
+            }
+        }
+
     }
 }

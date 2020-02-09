@@ -38,7 +38,7 @@ namespace MyPA.Code.Data.Services
                     }
                     else
                     {
-                        sql += " WHERE (AppliesTo LIKE @appliesTo)";
+                        sql += " WHERE (AppliesTo LIKE @appliesTo) OR (AppliesTo = 'Application;')";
                         cmd.Parameters.AddWithValue("@appliesTo", appliesTo);
                         cmd.CommandText = sql;
                     }

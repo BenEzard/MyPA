@@ -104,14 +104,27 @@ namespace MyPA.Code.Data.Models
             }
         }
 
+        /// <summary>
+        /// Generates a string which describes how long since the WorkItem was created.
+        /// Bound to WorkItemUserControl.
+        /// </summary>
         public string TimeSinceCreationString { 
             get
             {
-                string rValue = DateMethods.GenerateDateDifferenceLabel(CreationDateTime, DateTime.Now, true);
+                string rValue = "";
+                if (CreationDateTime.HasValue == false)
+                    rValue = DateMethods.GenerateDateDifferenceLabel(DateTime.Now, DateTime.Now, true);
+                else
+                    rValue = DateMethods.GenerateDateDifferenceLabel(CreationDateTime.Value, DateTime.Now, true);
                 return rValue;
             }
         }
 
+        public WorkItem()
+        {
+            CreationDateTime = DateTime.Now;
+        }
 
+        internal int WorkItemDueDateCount() => _workItemDueDates.Count;
     }
 }

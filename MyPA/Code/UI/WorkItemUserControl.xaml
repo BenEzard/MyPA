@@ -23,21 +23,29 @@
             </Grid.RowDefinitions>
 
             <!-- Top section: Overview. A GUI showing the current active tasks in a pretty presentation -->
-            <TabControl x:Name="WorkItemTabs" Grid.Row="0">
-                <TabItem Header="Active">
-                    <ListBox Name="OverviewListBox" 
-                             ItemsSource="{Binding ActiveWorkItems}" IsEnabled="{Binding IsApplicationNotInAddMode}" SelectedItem="{Binding SelectedWorkItem}"
-                              Grid.Row="0" SelectionMode="Single" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
-                        <!-- TODO: Does not work. Attempting to colour the background when the control is disabled
-                                <ListBox.Style>
-                                    <Style TargetType="ListBox">
-                                        <Style.Triggers>
-                                            <Trigger Property="IsEnabled" Value="False">
-                                                <Setter Property="Background" Value="WhiteSmoke" />
-                                            </Trigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </ListBox.Style> -->
+                <StackPanel Orientation="Vertical"  MaxHeight="300">
+                    <Border Background="GhostWhite" BorderThickness="0,0,0,1" BorderBrush="Silver">
+                        <StackPanel Orientation="Horizontal" Margin="0,3,0,3">
+                            <TextBlock Text="Filter:" Margin="5,0,10,0"  VerticalAlignment="Center" />
+                            <CheckBox Content="Active" VerticalAlignment="Center" Name="FilterActive" IsChecked="{Binding WorkItemOverviewIsActiveFilter, Mode=TwoWay}"/>
+                            <CheckBox Content="Closed" Margin="5,0,5,0" VerticalAlignment="Center" IsChecked="{Binding WorkItemOverviewIsClosedFilter, Mode=TwoWay}"/>
+                            <TextBlock Text="Status:" Margin="20,0,5,0" VerticalAlignment="Center" />
+                            <ComboBox ItemsSource="{Binding WorkItemStatusFilter}" MinWidth="100" IsEnabled="False" ToolTip="Status filtering isn't completed yet.">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <CheckBox Grid.Column="0" IsChecked="{Binding IsSelected, Mode=TwoWay}" Content="{Binding StatusLabel}"/>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                            <TextBlock Text="Search:" VerticalAlignment="Center" Margin="20,0,3,0" />
+                            <TextBox Name="FilterString" Width="150" Text="{Binding WorkItemOverviewFilterText, UpdateSourceTrigger=PropertyChanged}"/>
+                    </StackPanel>
+                    </Border>
+                <ListBox Name="OverviewListBox" 
+                    ItemsSource="{Binding WorkItemOverview}" IsEnabled="{Binding IsApplicationNotInAddMode}" SelectedItem="{Binding SelectedWorkItem}"
+                    Grid.Row="0" SelectionMode="Single" 
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Visible"
+                             BorderThickness="0">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
                                 <Grid>
@@ -57,26 +65,19 @@
                                     </Grid.RowDefinitions>
 
                                     <TextBlock Text="{Binding Title}" 
-                                               Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="0" 
-                                               MaxWidth="150" HorizontalAlignment="Left" VerticalAlignment="Center"
-                                               TextWrapping="WrapWithOverflow" />
+                                    Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="0" 
+                                    MaxWidth="150" HorizontalAlignment="Left" VerticalAlignment="Center"
+                                    TextWrapping="WrapWithOverflow" />
                                     <Image Source="../../Images/folder-blue.png"
-                                           Grid.Column="0" Grid.Row="1" Grid.RowSpan="3"
-                                            HorizontalAlignment="Center" VerticalAlignment="Top" Height="50" />
-                                        <TextBlock Text="{Binding CurrentWorkItemDueDate.DueDateTime, StringFormat=\{0:ddd dd/MM HH:mm\}}"
-                                               Grid.Column="1" Grid.Row="1" />
-                                        <TextBlock Text="{Binding CurrentWorkItemStatusEntry.StatusLabel}" Margin="0" Padding="0" 
-                                               Grid.Column="1" Grid.Row="2" />
-                                        <ProgressBar Value="{Binding CurrentWorkItemStatusEntry.CompletionAmount, Mode=OneWay}"
-                                        Grid.Column="1" Grid.Row="3"
-                                        MinHeight="10" MaxHeight="10" />
-                                        <!--<TextBlock Text="{Binding DueDate, StringFormat=\{0:ddd dd/MM HH:mm\}}" 
-                                               Grid.Column="1" Grid.Row="1" />
-                                            <TextBlock Text="{Binding Status}" Margin="0" Padding="0" 
-                                               Grid.Column="1" Grid.Row="2" />
-                                            <ProgressBar Value="{Binding Completed}"
-                                        Grid.Column="1" Grid.Row="3"
-                                        MinHeight="10" MaxHeight="10" />-->
+                                Grid.Column="0" Grid.Row="1" Grid.RowSpan="3"
+                                HorizontalAlignment="Center" VerticalAlignment="Top" Height="50" />
+                                    <TextBlock Text="{Binding CurrentWorkItemDueDate.DueDateTime, StringFormat=\{0:ddd dd/MM HH:mm\}}"
+                                    Grid.Column="1" Grid.Row="1" />
+                                    <TextBlock Text="{Binding CurrentWorkItemStatusEntry.StatusLabel}" Margin="0" Padding="0" 
+                                    Grid.Column="1" Grid.Row="2" />
+                                    <ProgressBar Value="{Binding CurrentWorkItemStatusEntry.CompletionAmount, Mode=OneWay}"
+                            Grid.Column="1" Grid.Row="3"
+                            MinHeight="10" MaxHeight="10" />
                                 </Grid>
                             </DataTemplate>
                         </ListBox.ItemTemplate>
@@ -86,8 +87,7 @@
                             </ItemsPanelTemplate>
                         </ListBox.ItemsPanel>
                     </ListBox>
-                </TabItem>
-            </TabControl>
+                </StackPanel>
 
             <GridSplitter Height="2" HorizontalAlignment="Stretch" Grid.Row="1" Background="LightGray" />
 
@@ -157,7 +157,7 @@
                                                 <RowDefinition Height="Auto" />
                                                 <RowDefinition Height="Auto" />
                                             </Grid.RowDefinitions>
-                                            <TextBlock Text="ID:" 
+                                            <TextBlock Text="Work Item ID:" 
                                                         Grid.Column="0" Grid.Row="0" Foreground="Gray" />
                                             <TextBlock Text="{Binding SelectedWorkItem.WorkItemID}" 
                                                         Grid.Column="1" Grid.Row="0" Foreground="Gray" Margin="5,0,0,0"/>
@@ -173,11 +173,11 @@
                                             
                                             <TextBlock Text="Modified:" 
                                                         Grid.Column="0" Grid.Row="2" Foreground="Gray" />
-                                            <TextBlock Text="{Binding SelectedWorkItem.ModificationDateTime, 
+                                            <TextBlock Text="{Binding SelectedWorkItemModifiedDateTime, 
                                                         TargetNullValue='',
                                                         StringFormat=\{0:ddd dd/MM HH:mm\}}" 
                                                         Grid.Column="1" Grid.Row="2" Foreground="Gray" Margin="5,0,0,0"/>
-                                        </Grid>
+                                            </Grid>
                                     </StackPanel>
                                 </StackPanel>
                             </Grid>

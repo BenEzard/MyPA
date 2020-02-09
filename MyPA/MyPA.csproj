@@ -103,6 +103,7 @@
     <Compile Include="Code\Data\Models\BaseWorkItemStatusEntry.cs" />
     <Compile Include="Code\Data\Models\Preference.cs" />
     <Compile Include="Code\Data\Models\WorkItemStatusEntry.cs" />
+    <Compile Include="Code\Data\Models\WorkItemStatusFilter.cs" />
     <Compile Include="Code\Data\PreferenceName.cs" />
     <Compile Include="Code\Data\Services\ApplicationRepository.cs" />
     <Compile Include="Code\Data\Services\BaseRepository.cs" />
@@ -115,12 +116,13 @@
       <DependentUpon>DueDateDialog.xaml</DependentUpon>
     </Compile>
     <Compile Include="Code\UI\Util\BooleanToVisibilityConverter.cs" />
-    <Compile Include="Code\UI\Util\CollectionMethods.cs" />
-    <Compile Include="Code\UI\Util\DateMethods.cs" />
+    <Compile Include="Code\Util\CollectionMethods.cs" />
+    <Compile Include="Code\Util\DateMethods.cs" />
     <Compile Include="Code\UI\Util\RelayCommand.cs" />
     <Compile Include="Code\UI\WorkItemUserControl.xaml.cs">
       <DependentUpon>WorkItemUserControl.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Code\Util\StringMethods.cs" />
     <Compile Include="Code\WorkItemViewModel.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
@@ -175,6 +177,9 @@
     <Resource Include="Images\cancel.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\report_delete.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

@@ -114,6 +114,29 @@ namespace MyPA.Code
         }
         #endregion
 
+        #region WorkItemDeletingCommand
+        RelayCommand _workItemDeletingCommand;
+        public ICommand WorkItemDeletingCommand
+        {
+            get
+            {
+                if (_workItemDeletingCommand == null)
+                {
+                    _workItemDeletingCommand = new RelayCommand(WorkItemDeleting, null);
+                }
+                return _workItemDeletingCommand;
+            }
+        }
+
+        /// <summary>
+        /// Delete a WorkItem
+        /// </summary>
+        public void WorkItemDeleting()
+        {
+            Messenger.Default.Send<AppAction>(AppAction.DELETING_WORK_ITEM);
+        }
+        #endregion
+
         /// <summary>
         /// Save the current window location.
         /// TODO Change this to ICommand.
@@ -129,6 +152,14 @@ namespace MyPA.Code
             applicationRepository.UpdatePreference(PreferenceName.APPLICATION_WIDTH, width.ToString());
             applicationRepository.UpdatePreference(PreferenceName.APPLICATION_POSITION_TOP, top.ToString());
             applicationRepository.UpdatePreference(PreferenceName.APPLICATION_POSITION_LEFT, left.ToString());
+        }
+
+        /// <summary>
+        /// Send out a notification that the application is closing.
+        /// </summary>
+        public void ApplicationClosingNotification()
+        {
+            Messenger.Default.Send<AppAction>(AppAction.APPLICATION_CLOSING);
         }
     }
 }

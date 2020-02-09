@@ -52,5 +52,6 @@ namespace MyPA.Code.UI
             var dd = new DueDateDialog(((WorkItemViewModel)DataContext).SelectedWorkItem.CurrentWorkItemDueDate);
             dd.ShowDialog();
         }
+
     }
 }

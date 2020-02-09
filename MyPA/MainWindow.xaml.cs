@@ -17,13 +17,14 @@ namespace MyPA
         }
 
         /// <summary>
-        /// Does this need to be elsewhere (not in code-behind)
+        /// TODO: Does this need to be elsewhere (not in code-behind)
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             ((ApplicationViewModel)DataContext).SaveWindowLocation(this.Height, this.Width, this.Top, this.Left);
+            ((ApplicationViewModel)DataContext).ApplicationClosingNotification();
         }
 
         /// <summary>

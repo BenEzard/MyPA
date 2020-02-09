@@ -45,5 +45,25 @@ namespace MyPA.Code.Data.Services
 
         List<DateTime> GetIneligibleDueDates();
 
+        /// <summary>
+        /// Delete a WorkItem.
+        /// </summary>
+        /// <param name="workItemID"></param>
+        /// <param name="logicalDelete"></param>
+        void DeleteWorkItem(int workItemID, bool logicalDelete);
+
+        /// <summary>
+        /// Delete a WorkItemStatusEntry.
+        /// </summary>
+        /// <param name="workItemID"></param>
+        /// <param name="logicalDelete"></param>
+        void DeleteWorkItemStatusEntry(int workItemID, bool logicalDelete);
+
+        /// <summary>
+        /// Delete a WorkItemDueDate.
+        /// </summary>
+        /// <param name="workItemID"></param>
+        /// <param name="logicalDelete"></param>
+        void DeleteWorkItemDueDate(int workItemID, bool logicalDelete);
     }
 }
