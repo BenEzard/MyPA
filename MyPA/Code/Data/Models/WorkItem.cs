@@ -1,6 +1,7 @@
 ﻿using MyPA.Code.UI.Util;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 
 namespace MyPA.Code.Data.Models
@@ -51,7 +52,7 @@ namespace MyPA.Code.Data.Models
         /// <summary>
         /// Return the number of WorkItemStatusEntries loaded for this WorkItem.
         /// </summary>
-        public int GetWorkItemStatusEntryCount {
+        public int WorkItemStatusEntryCount {
            get => _workItemStatusEntries.Count;
         }
 
@@ -122,7 +123,9 @@ namespace MyPA.Code.Data.Models
 
         public WorkItem()
         {
+            WorkItemID = -1;
             CreationDateTime = DateTime.Now;
+            OnPropertyChanged("");
         }
 
         internal int WorkItemDueDateCount() => _workItemDueDates.Count;

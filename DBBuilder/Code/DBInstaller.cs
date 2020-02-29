@@ -18,7 +18,7 @@ namespace MyPA.Data
         private string DBFilePath { get; set; }
         private string DBConnectionString { get; set; }
 
-        public DBInstaller(string dbFilePath, string dbConnectionString)
+        public DBInstaller(string dbFilePath, string dbConnectionString, bool loadData)
         {
             DBFilePath = dbFilePath;
             DBConnectionString = dbConnectionString;
@@ -29,7 +29,9 @@ namespace MyPA.Data
 
             LoadTables();
             LoadViews();
-            InsertRecords();
+
+            if (loadData)
+                InsertRecords();
         }
 
         private void InsertRecords()

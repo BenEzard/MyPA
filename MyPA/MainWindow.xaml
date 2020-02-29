@@ -36,6 +36,24 @@
                         </Image>
                     </StackPanel>
                 </Button>
+
+                <Button Name="NewJournalEntryButton" IsEnabled="{Binding IsApplicationInEditMode}" Command="{Binding WorkItemJournalCreatingCommand}"
+                        VerticalAlignment="Top">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="Images\journal_add.png" Width="26" ToolTip="New Journal Entry">
+                            <Image.Style>
+                                <Style TargetType="Image">
+                                    <Style.Triggers>
+                                        <Trigger Property="IsEnabled" Value="False">
+                                            <Setter Property="Opacity" Value="0.5" />
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Image.Style>
+                        </Image>
+                    </StackPanel>
+                </Button>
+
                 <Button Name="DeleteWorkItemButton" Command="{Binding WorkItemDeletingCommand}"
                         VerticalAlignment="Bottom">
                     <StackPanel Orientation="Horizontal">
@@ -52,16 +70,13 @@
                         </Image>
                     </StackPanel>
                 </Button>
+
+                
+                
             </ToolBar>
         </ToolBarTray>
 
         <WorkItemTabControl:WorkItemUserControl />
-        <!--<WorkItemTabControl:WorkItemUserControl>
-            <ObjectDataProvider>
-                <ObjectDataProvider.ConstructorParameters>
-                    <lo<local:ApplicationViewModel />
-                </ObjectDataProvider.ConstructorParameters>
-            </ObjectDataProvider>
-        </WorkItemTabControl:WorkItemUserControl>-->
+
     </DockPanel>
 </Window>

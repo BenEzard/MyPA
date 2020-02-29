@@ -3,12 +3,10 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:JournalTabControl="clr-namespace:MyPA.Code.UI"
              xmlns:local="clr-namespace:MyPA.Code"
              mc:Ignorable="d"
              d:DesignHeight="450" d:DesignWidth="800">
-    <UserControl.Resources>
-        <local:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-    </UserControl.Resources>
     <UserControl.DataContext>
         <local:WorkItemViewModel/>
     </UserControl.DataContext>
@@ -30,7 +28,7 @@
                             <CheckBox Content="Active" VerticalAlignment="Center" Name="FilterActive" IsChecked="{Binding WorkItemOverviewIsActiveFilter, Mode=TwoWay}"/>
                             <CheckBox Content="Closed" Margin="5,0,5,0" VerticalAlignment="Center" IsChecked="{Binding WorkItemOverviewIsClosedFilter, Mode=TwoWay}"/>
                             <TextBlock Text="Status:" Margin="20,0,5,0" VerticalAlignment="Center" />
-                            <ComboBox ItemsSource="{Binding WorkItemStatusFilter}" MinWidth="100" IsEnabled="False" ToolTip="Status filtering isn't completed yet.">
+                            <ComboBox MinWidth="100" IsEnabled="False" ToolTip="Status filtering isn't completed yet.">
                                 <ComboBox.ItemTemplate>
                                     <DataTemplate>
                                         <CheckBox Grid.Column="0" IsChecked="{Binding IsSelected, Mode=TwoWay}" Content="{Binding StatusLabel}"/>
@@ -119,9 +117,10 @@
                 </StackPanel>
 
                 <!-- Middle of lower panel -->
-                <TabControl Grid.Column="0" Grid.Row="1" TabStripPlacement="Left">
+                <TabControl x:Name="WorkItemTabControl" SelectedIndex="{Binding SelectedWorkItemTabIndex}"
+                    Grid.Column="0" Grid.Row="1" TabStripPlacement="Left">
                     <TabItem Name="TabTaskDescription"
-                             ToolTip="Task Description" Foreground="White">
+                             Foreground="White">
                         <TabItem.Header>
                             <Image Width="26" Source="../../Images/report.png"></Image>
                         </TabItem.Header>
@@ -184,6 +183,12 @@
 
                         </DockPanel>
                     </TabItem>
+                        <TabItem Name="TabTaskJournal" IsEnabled="{Binding IsApplicationInEditMode}" Height="34" VerticalAlignment="Top" >
+                        <TabItem.Header>
+                            <Image Width="26" Source="../../Images/book_open.png"></Image>
+                        </TabItem.Header>
+                        <JournalTabControl:JournalTabUserControl />
+                    </TabItem>
                 </TabControl>
 
                 <!-- Bottom row -->
@@ -206,11 +211,16 @@
                 <StackPanel VerticalAlignment="Center" Orientation="Horizontal" HorizontalAlignment="Right"
                     Grid.Row="2" Grid.Column="0" >
                     <Button Name="CancelButton" Content="Cancel" 
-                                Visibility="{Binding IsApplicationInAddMode, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                Command="{Binding CancelWorkitemCreatingCommand}"
-                            Margin="5" Padding="5" />
-                        <Button Name="SaveButton" Command="{Binding WorkItemSaveNewCommand}"
-                            Content="Save" Margin="5" Padding="5" />
+                        Visibility="{Binding IsApplicationInAddMode, Converter={StaticResource BooleanToVisibilityConverter}}"
+                        Command="{Binding CancelWorkItemCreatingCommand}"
+                        Margin="5" Padding="5" />
+                        <Button Name="SaveButton" Command="{Binding WorkItemSaveNewCommand}" 
+                            Margin="5" Padding="2" Visibility="{Binding IsApplicationInAddMode, Converter={StaticResource BooleanToVisibilityConverter}}" >
+                        <StackPanel Orientation="Horizontal" Margin="5,0,5,0">
+                                <Image Source="../../Images/report_add.png" Width="26" Margin="0,0,5,0"/>
+                            <TextBlock Text="Save" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
                 </StackPanel>
             </Grid>
 

@@ -1,7 +1,6 @@
-﻿using MyPA.Code.Data.Services;
+﻿using MyPA.Code.Data.Actions;
+using MyPA.Code.Data.Services;
 using MyPA.Code.UI.Util;
-using System;
-using System.Collections.Generic;
 using System.Windows.Input;
 
 namespace MyPA.Code
@@ -64,53 +63,15 @@ namespace MyPA.Code
             {
                 if (_workItemCreatingCommand == null)
                 {
-                    _workItemCreatingCommand = new RelayCommand(BeginWorkItemCreation, CanAddNewWorkItem);
+                    _workItemCreatingCommand = new RelayCommand(
+                        /// Send out a notification that a WorkItem has begun creation.
+                        () => { Messenger.Default.Send(new WorkItemCreatingAction()); },
+                        /// Can a New WorkItem be created at the moment?
+                        () => { return true; }
+                    );
                 }
                 return _workItemCreatingCommand;
             }
-        }
-
-        public void BeginWorkItemCreation()
-        {
-            Messenger.Default.Send<AppAction>(AppAction.CREATING_WORK_ITEM);
-       /*     AppMode = ApplicationMode.ADD_MODE;
-            var wi = new WorkItem();
-            SelectedWorkItem = wi;*/
-            //            WorkItemCreatingEvent?.Invoke(this, new WorkItemEventArgs(WorkItemType.WORK_ITEM_CREATING, wi));
-        }
-
-        public bool CanAddNewWorkItem()
-        {
-            return true;
-        }
-        #endregion
-
-        #region CancelWorkItemCreatingCommand
-        RelayCommand _workItemCamcelCreatingCommand;
-        public ICommand CancelWorkItemCreatingCommand
-        {
-            get
-            {
-                if (_workItemCamcelCreatingCommand == null)
-                {
-                    _workItemCamcelCreatingCommand = new RelayCommand(CancelWorkItemCreation, CanCancelNewWorkItem);
-                }
-                return _workItemCamcelCreatingCommand;
-            }
-        }
-
-        public void CancelWorkItemCreation()
-        {
-            //AppMode = ApplicationMode.EDIT_MODE;
-        }
-
-        public bool CanCancelNewWorkItem()
-        {
-            /* if (AppMode == ApplicationMode.ADD_MODE)
-                 return true;
-             else
-                 return false;*/
-            return true;
         }
         #endregion
 
@@ -134,6 +95,28 @@ namespace MyPA.Code
         public void WorkItemDeleting()
         {
             Messenger.Default.Send<AppAction>(AppAction.DELETING_WORK_ITEM);
+        }
+        #endregion
+
+        #region WorkItemJournalCreatingCommand
+        /// <summary>
+        /// Send out a notification that a WorkItemJournal should begin creation.
+        /// </summary>
+        RelayCommand _workItemJournalCreatingCommand;
+        public ICommand WorkItemJournalCreatingCommand
+        {
+            get
+            {
+                if (_workItemJournalCreatingCommand == null)
+                {
+                    _workItemJournalCreatingCommand = new RelayCommand(
+                        // Send notification that a WorkItemJournal should begin creation
+                        () => { Messenger.Default.Send(new WorkItemJournalCreatingAction()); }, 
+                        // Can a New WorkItem Journal be added now?
+                        () => { return true; });
+                }
+                return _workItemJournalCreatingCommand;
+            }
         }
         #endregion
 

@@ -78,6 +78,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Code\UI\JournalTabUserControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Code\UI\WorkItemUserControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -90,13 +94,24 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Code\AppAction.cs" />
+    <Compile Include="Code\Data\Actions\AppAction.cs" />
     <Compile Include="Code\ApplicationMode.cs" />
     <Compile Include="Code\ApplicationViewModel.cs" />
     <Compile Include="Code\BaseViewModel.cs" />
+    <Compile Include="Code\Data\Actions\GenericCommandAction.cs" />
+    <Compile Include="Code\Data\Actions\MoveVerticalWorkItemJournalSplitAction.cs" />
+    <Compile Include="Code\Data\Actions\WorkItemCreatingAction.cs" />
+    <Compile Include="Code\Data\Actions\WorkItemJournalAction.cs" />
+    <Compile Include="Code\Data\Actions\WorkItemJournalCreatingAction.cs" />
+    <Compile Include="Code\Data\Actions\WorkItemSelectedTabAction.cs" />
+    <Compile Include="Code\Data\Actions\WorkItemSelectedAction.cs" />
+    <Compile Include="Code\Data\Events\WorkItemEventAction.cs" />
+    <Compile Include="Code\Data\Events\WorkItemEvent.cs" />
+    <Compile Include="Code\Data\Events\WorkItemJournalEvent.cs" />
     <Compile Include="Code\Data\Models\BaseDBObject.cs" />
     <Compile Include="Code\Data\Models\BaseWorkItem.cs" />
     <Compile Include="Code\Data\Models\DBActionRequired.cs" />
+    <Compile Include="Code\Data\Models\WorkItemJournalEntry.cs" />
     <Compile Include="Code\Data\Models\WorkItem.cs" />
     <Compile Include="Code\Data\Models\WorkItemDueDate.cs" />
     <Compile Include="Code\Data\Models\WorkItemStatus.cs" />
@@ -108,14 +123,22 @@
     <Compile Include="Code\Data\Services\ApplicationRepository.cs" />
     <Compile Include="Code\Data\Services\BaseRepository.cs" />
     <Compile Include="Code\Data\Services\IApplicationRepository.cs" />
+    <Compile Include="Code\Data\Services\IWorkItemJournalRepository.cs" />
     <Compile Include="Code\Data\Services\IWorkItemRepository.cs" />
+    <Compile Include="Code\Data\Services\WorkItemJournalRepository.cs" />
     <Compile Include="Code\Data\Services\WorkItemRepository.cs" />
+    <Compile Include="Code\Data\WorkItemSaveCommand.cs" />
     <Compile Include="Code\DueDateViewModel.cs" />
     <Compile Include="Code\Messenger.cs" />
     <Compile Include="Code\UI\DueDateDialog.xaml.cs">
       <DependentUpon>DueDateDialog.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Code\UI\JournalTabUserControl.xaml.cs">
+      <DependentUpon>JournalTabUserControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Code\UI\SplitSetting.cs" />
     <Compile Include="Code\UI\Util\BooleanToVisibilityConverter.cs" />
+    <Compile Include="Code\UI\Util\LessScrollbarWidthConverter.cs" />
     <Compile Include="Code\Util\CollectionMethods.cs" />
     <Compile Include="Code\Util\DateMethods.cs" />
     <Compile Include="Code\UI\Util\RelayCommand.cs" />
@@ -123,6 +146,7 @@
       <DependentUpon>WorkItemUserControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Code\Util\StringMethods.cs" />
+    <Compile Include="Code\WorkItemJournalViewModel.cs" />
     <Compile Include="Code\WorkItemViewModel.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
@@ -180,6 +204,17 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\report_delete.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\book_open.png" />
+    <Resource Include="Images\journal_add.png" />
+    <Resource Include="Images\journal_delete.png" />
+    <Resource Include="Images\journal_edit.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\application_side_contract.png" />
+    <Resource Include="Images\application_side_expand.png" />
+    <Resource Include="Images\application_tile_horizontal.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

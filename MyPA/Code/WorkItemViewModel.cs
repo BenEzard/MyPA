@@ -9,11 +9,16 @@ using System.Linq;
 using System.Windows.Data;
 using System.ComponentModel;
 using MyPA.Code.Util;
+using MyPA.Code.Data.Actions;
+using MyPA.Code.Data.Events;
+using MyPA.Code.Data;
 
 namespace MyPA.Code
 {
     public class WorkItemViewModel : BaseViewModel
     {
+        private static string TAB_NAME = "TabTaskDescription";
+
         /// <summary>
         /// The Repository handles all of the data collection; editing and deleting methods.
         /// </summary>
@@ -32,6 +37,10 @@ namespace MyPA.Code
         public List<WorkItemStatus> WorkItemStatuses { get; set; }
 
         public List<WorkItemStatusFilter> WorkItemStatusFilter { get; set; } = new List<WorkItemStatusFilter>();
+
+        public delegate void ModelEventHandler(object obj, WorkItemJournalEvent e);
+        public event ModelEventHandler ModelEvent;
+
 
         /// <summary>
         /// Return a WorkItemStatus by the given WorkItemStatusID
@@ -58,9 +67,13 @@ namespace MyPA.Code
             get => _selectedWorkItem;
             set
             {
+                if (value == null)
+                    return;
+
                 UpdateWorkItem(_selectedWorkItem);
                 _selectedWorkItem = value;
-                Console.WriteLine($"Number of due dates {_selectedWorkItem.WorkItemDueDateCount()}");
+                Messenger.Default.Send(new WorkItemSelectedAction(_selectedWorkItem));
+                Messenger.Default.Send(new WorkItemJournalEvent(WorkItemJournalAction.MOVE_VERTICAL_SPLIT, UI.SplitSetting.EQUAL_SPLIT));
                 OnPropertyChanged("");
             }
         }
@@ -143,10 +156,15 @@ namespace MyPA.Code
             }
         }
 
-        /*        public void NotSure()
-                {
-                    Console.WriteLine("not sure");
-                }*/
+        /// <summary>
+        /// List of UI tabs that are available on the UI.
+        /// </summary>
+        private List<string> _listOfUITabs = new List<string>();
+        public void RegisterUITab(string tabName)
+        {
+            _listOfUITabs.Add(tabName.ToUpper());
+        }
+
 
         /// <summary>
         /// Returns true if a WorkItem has been selected; otherwise false
@@ -175,7 +193,7 @@ namespace MyPA.Code
 
                 if (_selectedWorkItem != null)
                 {
-                    if ((IsApplicationInAddMode) && (_selectedWorkItem.GetLastWorkItemStatusEntry() == null))
+                    if ((IsApplicationInAddMode) || (_selectedWorkItem.WorkItemStatusEntryCount == 0))
                     {
                         rValue = 0;
                     }
@@ -212,6 +230,17 @@ namespace MyPA.Code
             }
         }
 
+        private int _selectedWorkItemTabIndex;
+        public int SelectedWorkItemTabIndex
+        {
+            get => _selectedWorkItemTabIndex;
+            set
+            {
+                _selectedWorkItemTabIndex = value;
+                OnPropertyChanged("");
+            }
+        }
+
         public WorkItemStatus SelectedWorkItemStatus
         {
             get
@@ -220,7 +249,7 @@ namespace MyPA.Code
                 
                 if (_selectedWorkItem != null)
                 {
-                    if ((IsApplicationInAddMode) && (_selectedWorkItem.GetLastWorkItemStatusEntry() == null))
+                    if ((IsApplicationInAddMode) || (_selectedWorkItem.WorkItemStatusEntryCount == 0))
                         rValue = GetWorkItemStatuses(true, true).ToList()[0];
                     else
                         rValue = GetWorkItemStatus(_selectedWorkItem.GetLastWorkItemStatusEntry().WorkItemStatusID);
@@ -246,7 +275,11 @@ namespace MyPA.Code
             Preferences = workItemRepository.GetWorkItemPreferences();
 
             Messenger.Default.Register<AppAction>(this, AppActionReceived);
+            Messenger.Default.Register<WorkItemCreatingAction>(this, WorkItemCreatingNotification);
             Messenger.Default.Register<WorkItemDueDate>(this, ReceivedWorkItemDueDateChange);
+            Messenger.Default.Register<WorkItemSelectTabAction>(this, ChangeTabSelection);
+/*            Messenger.Default.Register<WorkItemJournalCreatingAction>(this, WorkItemJournalCreatingNotification);
+            Messenger.Default.Register<WorkItemSaveCommand>(this, SaveCommandNotification);*/
 
             LoadWorkItemStatuses();
 
@@ -257,6 +290,25 @@ namespace MyPA.Code
             _workItemOverview.Filter += WorkItemOverviewFilter;
 
             OnPropertyChanged("");
+        }
+
+     /*   private void SaveCommandNotification(WorkItemSaveCommand action)
+        {
+            SaveCommand.ButtonText = action.ButtonText;
+            SaveCommand.ButtonImagePath = action.ButtonImagePath;
+            SaveCommand.CommandAction = action.CommandAction;
+        }
+
+        private void WorkItemJournalCreatingNotification(WorkItemJournalCreatingAction action)
+        {
+            SaveCommand.ButtonText = "New Journal Entry";
+            SaveCommand.ButtonImagePath = "";
+//            SaveCommand.CommandAction = WorkItemJournalCreatingCommand;
+        }*/
+
+        private void ChangeTabSelection(WorkItemSelectTabAction action)
+        {
+            SelectedWorkItemTabIndex = GetUITabIndex(action.Name);
         }
 
         /// <summary>
@@ -279,9 +331,6 @@ namespace MyPA.Code
         {
             switch (action)
             {
-                case AppAction.CREATING_WORK_ITEM:
-                    RequestAddNewWorkItem();
-                    break;
                 case AppAction.APPLICATION_CLOSING:
                     UpdateWorkItem(_selectedWorkItem);
                     break;
@@ -292,12 +341,40 @@ namespace MyPA.Code
         }
 
         /// <summary>
-        /// Begin the creation of a new Work Item. 
-        /// (Note that this is not saved at this time).
+        /// Return the tab index based on the specified tooltip.
         /// </summary>
-        private void RequestAddNewWorkItem()
+        /// <param name="name"></param>
+        /// <returns></returns>
+        private int GetUITabIndex(string name)
         {
+            name = name.ToUpper();
+            int rValue = -1;
+            for (int i = 0; i < _listOfUITabs.Count; i++)
+            {
+                if (_listOfUITabs[i].Equals(name))
+                {
+                    rValue = i;
+                    break;
+                }
+            }
+            return rValue;
+        }
+
+        /// <summary>
+        /// Begin the creation of a new Work Item. 
+        /// (Note that the WorkItem is not saved at this time).
+        /// </summary>
+        private void WorkItemCreatingNotification(WorkItemCreatingAction a)
+        {
+            // Set the application into ADD_MODE.
             AppMode = ApplicationMode.ADD_MODE;
+/*            SaveCommand.ButtonText = "Save";
+            SaveCommand.ButtonImagePath = "../../Images/report_add.png";
+            SaveCommand.CommandAction = WorkItemSaveNewCommand;*/
+
+            // Change the WorkItem tab that is currently being displayed.
+            SelectedWorkItemTabIndex = GetUITabIndex(TAB_NAME);
+
             SelectedWorkItem = new WorkItem();
             DateTime newDueDate = new DueDateViewModel().GenerateDefaultDueDate();
             var widd = new WorkItemDueDate(newDueDate, "Initial WorkItem creation.");
@@ -447,15 +524,19 @@ namespace MyPA.Code
             WorkItems.Add(workItem);
         }
 
-        /*        public async void SaveWorkItem()
-                {
-                    if (SelectedWorkItem.WorkItemId == null)
-                        AddWorkItem(SelectedWorkItem);
-                    else 
-                        await workItemRepository.UpdateWorkItemAsync(SelectedWorkItem);
-                }*/
+/*        private WorkItemSaveCommand _saveCommand = new WorkItemSaveCommand();
+        public WorkItemSaveCommand SaveCommand
+        {
+            get => _saveCommand;
+            set
+            {
+                if (_saveCommand == null)
+                    return;
 
-        //        public event EventHandler<WorkItemEventArgs> WorkItemCreatingEvent;
+                _saveCommand = value;
+                OnPropertyChanged("");
+            }
+        }*/
 
         #region WorkItemCreatingCommand
         RelayCommand _workItemCreatingCommand;
@@ -514,7 +595,7 @@ namespace MyPA.Code
         }
         #endregion
 
-        #region CancelWorkItemCreatingCommand
+        #region Cancel_WorkItem_CreatingCommand
         RelayCommand _workItemCancelCreationCommand;
         public ICommand CancelWorkItemCreatingCommand
         {
@@ -530,15 +611,18 @@ namespace MyPA.Code
 
         public void CancelWorkItemCreation()
         {
+            Console.WriteLine("CancelWorkItemCreation in WorkItemViewModel");
             AppMode = ApplicationMode.EDIT_MODE;
         }
 
         public bool CanCancelNewWorkItem()
         {
+            bool rValue;
             if (AppMode == ApplicationMode.ADD_MODE)
-                return true;
+                rValue = true;
             else
-                return false;
+                rValue = false;
+            return rValue;
         }
         #endregion
 

@@ -13,6 +13,20 @@ namespace MyPA.Code.UI
         public WorkItemUserControl()
         {
             InitializeComponent();
+            RegisterUITabs();
+        }
+
+        /// <summary>
+        /// Register all of the UI tabs with the model.
+        /// </summary>
+        private void RegisterUITabs()
+        {
+            int i = 0;
+            foreach (TabItem item in WorkItemTabControl.Items)
+            {
+                ((WorkItemViewModel)DataContext).RegisterUITab(item.Name);
+                i++;
+            }
         }
 
         /// <summary>
