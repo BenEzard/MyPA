@@ -94,20 +94,17 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Code\Data\Actions\AppAction.cs" />
-    <Compile Include="Code\ApplicationMode.cs" />
     <Compile Include="Code\ApplicationViewModel.cs" />
     <Compile Include="Code\BaseViewModel.cs" />
-    <Compile Include="Code\Data\Actions\GenericCommandAction.cs" />
-    <Compile Include="Code\Data\Actions\MoveVerticalWorkItemJournalSplitAction.cs" />
-    <Compile Include="Code\Data\Actions\WorkItemCreatingAction.cs" />
-    <Compile Include="Code\Data\Actions\WorkItemJournalAction.cs" />
-    <Compile Include="Code\Data\Actions\WorkItemJournalCreatingAction.cs" />
-    <Compile Include="Code\Data\Actions\WorkItemSelectedTabAction.cs" />
-    <Compile Include="Code\Data\Actions\WorkItemSelectedAction.cs" />
-    <Compile Include="Code\Data\Events\WorkItemEventAction.cs" />
-    <Compile Include="Code\Data\Events\WorkItemEvent.cs" />
-    <Compile Include="Code\Data\Events\WorkItemJournalEvent.cs" />
+    <Compile Include="Code\Data\Notifications\SaveSessionNotification.cs" />
+    <Compile Include="Code\Data\Notifications\BaseNotification.cs" />
+    <Compile Include="Code\Data\Notifications\MoveWorkItemJournalVerticalSplitNotification.cs" />
+    <Compile Include="Code\Data\Notifications\ApplicationClosingNotification.cs" />
+    <Compile Include="Code\Data\Notifications\WorkItemCreatingNotification.cs" />
+    <Compile Include="Code\Data\Notifications\WorkItemJournalCreatingNotification.cs" />
+    <Compile Include="Code\Data\Notifications\WorkItemDeletingNotification.cs" />
+    <Compile Include="Code\Data\Notifications\WorkItemSelectedTabAction.cs" />
+    <Compile Include="Code\Data\Notifications\WorkItemSelectedNotification.cs" />
     <Compile Include="Code\Data\Models\BaseDBObject.cs" />
     <Compile Include="Code\Data\Models\BaseWorkItem.cs" />
     <Compile Include="Code\Data\Models\DBActionRequired.cs" />
@@ -137,6 +134,7 @@
       <DependentUpon>JournalTabUserControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Code\UI\SplitSetting.cs" />
+    <Compile Include="Code\UI\Util\InverseBooleanToVisibilityConverter.cs" />
     <Compile Include="Code\UI\Util\BooleanToVisibilityConverter.cs" />
     <Compile Include="Code\UI\Util\LessScrollbarWidthConverter.cs" />
     <Compile Include="Code\Util\CollectionMethods.cs" />

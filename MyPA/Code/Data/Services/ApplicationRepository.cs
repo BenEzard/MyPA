@@ -4,8 +4,19 @@ using System.Data.SQLite;
 
 namespace MyPA.Code.Data.Services
 {
-    public class ApplicationRepository : BaseRepository, IApplicationRepository
+    public sealed class ApplicationRepository : BaseRepository, IApplicationRepository
     {
+        private static readonly ApplicationRepository _instance = new ApplicationRepository();
+
+        static ApplicationRepository() { }
+
+        private ApplicationRepository() { }
+
+        public static ApplicationRepository Instance
+        {
+            get => _instance;
+        }
+
         Dictionary<PreferenceName, Preference> IApplicationRepository.GetApplicationPreferences()
         {
             return this.GetPreferences("Application");

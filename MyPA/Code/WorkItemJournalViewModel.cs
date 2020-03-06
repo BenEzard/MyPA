@@ -1,6 +1,4 @@
-﻿using MyPA.Code.Data;
-using MyPA.Code.Data.Actions;
-using MyPA.Code.Data.Events;
+﻿using MyPA.Code.Data.Actions;
 using MyPA.Code.Data.Services;
 using MyPA.Code.UI;
 using MyPA.Code.UI.Util;
@@ -39,6 +37,17 @@ namespace MyPA.Code
             }
         }
 
+        public bool IsJournalEntrySelected
+        {
+            get
+            {
+                if (_selectedJournal == null)
+                    return false;
+                else
+                    return true;
+            }
+        }
+
         private SplitSetting _verticalSplit = SplitSetting.EQUAL_SPLIT;
         public SplitSetting VerticalSplit
         {
@@ -50,71 +59,82 @@ namespace MyPA.Code
             }
         }
 
-        public delegate void ModelEventHandler(object obj, WorkItemJournalEvent e);
-        public event ModelEventHandler ModelEvent;
-
-        private ApplicationMode _appMode = ApplicationMode.EDIT_MODE;
-        public ApplicationMode AppMode
-        {
-            get => _appMode;
-            set {
-                _appMode = value;
-                OnPropertyChanged("");
-            }
-        }
-
-        public bool IsApplicationInAddMode 
+        public bool IsSelectedWorkItemJournalSaved
         {
             get
             {
-                if (_appMode == ApplicationMode.ADD_MODE)
-                    return true;
-                else
-                    return false;
-            }
-        }
+                bool rValue = false;
+                if (_selectedJournal != null)
+                {
+                    if (_selectedJournal.WorkItem_ID == -1)
+                        rValue = false;
+                    else
+                        rValue = true;
+                }
 
-        public bool IsApplicationNotInAddMode
-        {
-            get
-            {
-                if (_appMode == ApplicationMode.ADD_MODE)
-                    return false;
-                else
-                    return true;
+                return rValue;
             }
+            
         }
 
         public WorkItemJournalViewModel()
         {
-            Messenger.Default.Register<WorkItemSelectedAction>(this, WorkItemSelected);
-            Messenger.Default.Register<WorkItemJournalCreatingAction>(this, WorkItemJournalCreatingNotification);
+            Preferences = journalRepository.GetWorkItemJournalPreferences();
+
+            Messenger.Default.Register<WorkItemSelectedNotification>(this, OnWorkItemSelectedNotification);
+            Messenger.Default.Register<WorkItemJournalCreatingNotification>(this, OnWorkItemJournalCreatingNotification);
+            Messenger.Default.Register<WorkItemDeletingNotification>(this, OnWorkItemDeletingNotification);
         }
 
+        /// <summary>
+        /// Method which is run when 'OnWorkItemDeleting' notification is received.
+        /// </summary>
+        /// <param name="notification"></param>
+        private void OnWorkItemDeletingNotification(WorkItemDeletingNotification notification)
+        {
+            journalRepository.DeleteAllWorkItemJournalEntries(notification.WorkItem.WorkItemID.Value, notification.LogicalDelete);
+        }
+
+        /// <summary>
+        /// Update the selected journal entry; either inserting or updating it.
+        /// </summary>
         public void UpdateJournalEntry()
         {
-            Console.WriteLine($"===> inside UpdateJournalEntry {_selectedJournal.WorkItemJournalID}");
+            if (_selectedJournal == null || (String.IsNullOrEmpty(_selectedJournal.Title)) || (String.IsNullOrEmpty(_selectedJournal.Entry)))
+                return;
+
+            Console.WriteLine($"Inside UpdateJournalEntry {_selectedJournal.WorkItemJournalID}");
             if (_selectedJournal.WorkItemJournalID < 1)
             {
+                Console.WriteLine("Inserting");
                 journalRepository.InsertWorkItemJournalEntry(_selectedJournal);
                 WorkItemJournal.Add(_selectedJournal);
             }
             else
             {
+                Console.WriteLine("Updating");
                 journalRepository.UpdateWorkItemJournalEntry(_selectedJournal);
             }
         }
 
-        public void WorkItemSelected(WorkItemSelectedAction action)
+        /// <summary>
+        /// Method is called when a 'WorkItemSelectedNotification' is received.
+        /// </summary>
+        /// <param name="notification"></param>
+        public void OnWorkItemSelectedNotification(WorkItemSelectedNotification notification)
         {
-            if ((action.WorkItem == null) || (action.WorkItem.WorkItemID.HasValue == false))
+            Console.WriteLine($"WorkItem selection has been received in Journal");
+            // If WorkItem has not been instantiated or saved yet, then don't try to do anything with the journals.
+            if ((notification.WorkItem == null) || (notification.WorkItem.WorkItemID.HasValue == false) || (notification.WorkItem.WorkItemID.Value == -1))
                 return;
 
-            _workItemID = action.WorkItem.WorkItemID.Value;
+            _workItemID = notification.WorkItem.WorkItemID.Value;
             WorkItemJournal = new ObservableCollection<WorkItemJournalEntry>(journalRepository.SelectWorkItemJournals(_workItemID));
+            Console.WriteLine($"{WorkItemJournal.Count} journal entries loaded.");
+            Messenger.Default.Send(new MoveVerticalWorkItemJournalSplitNotification(SplitSetting.EQUAL_SPLIT));
         }
 
-        public void WorkItemJournalCreatingNotification(WorkItemJournalCreatingAction action)
+        public void OnWorkItemJournalCreatingNotification(WorkItemJournalCreatingNotification notification)
         {
             WorkItemJournalCreating(); // This calls another method, so that both buttons result in going to the same logic.
         }
@@ -127,18 +147,14 @@ namespace MyPA.Code
             {
                 if (_moveVerticalSplitEqualCommand == null)
                 {
-                    _moveVerticalSplitEqualCommand = new RelayCommand(MoveVerticalSplitEqual, null);
+                    _moveVerticalSplitEqualCommand = new RelayCommand(
+                        // Send out an event that requests a change to the vertical split.
+                        () => { InvokeEvent(this, new MoveVerticalWorkItemJournalSplitNotification(SplitSetting.EQUAL_SPLIT)); }
+                        // Command is always available.
+                        , null);
                 }
                 return _moveVerticalSplitEqualCommand;
             }
-        }
-
-        /// <summary>
-        /// Delete a WorkItem
-        /// </summary>
-        public void MoveVerticalSplitEqual()
-        {
-            ModelEvent?.Invoke(this, new WorkItemJournalEvent(WorkItemJournalAction.MOVE_VERTICAL_SPLIT, SplitSetting.EQUAL_SPLIT));
         }
         #endregion
 
@@ -150,18 +166,14 @@ namespace MyPA.Code
             {
                 if (_moveVerticalSplitEqualLeftCommand == null)
                 {
-                    _moveVerticalSplitEqualLeftCommand = new RelayCommand(MoveVerticalSplitLeft, null);
+                    _moveVerticalSplitEqualLeftCommand = new RelayCommand(
+                        // Send out an event that requests a change to the vertical split.
+                        () => { InvokeEvent(this, new MoveVerticalWorkItemJournalSplitNotification(SplitSetting.LEFT_EXPANDED)); }
+                        // Command is always available.
+                        , null);
                 }
                 return _moveVerticalSplitEqualLeftCommand;
             }
-        }
-
-        /// <summary>
-        /// Delete a WorkItem
-        /// </summary>
-        public void MoveVerticalSplitLeft()
-        {
-            ModelEvent?.Invoke(this, new WorkItemJournalEvent(WorkItemJournalAction.MOVE_VERTICAL_SPLIT, SplitSetting.LEFT_EXPANDED));
         }
         #endregion
 
@@ -173,18 +185,14 @@ namespace MyPA.Code
             {
                 if (_moveVerticalSplitEqualRightCommand == null)
                 {
-                    _moveVerticalSplitEqualRightCommand = new RelayCommand(MoveVerticalSplitRight, null);
+                    _moveVerticalSplitEqualRightCommand = new RelayCommand(
+                        // Send out an event that requests a change to the vertical split.
+                        () => { InvokeEvent(this, new MoveVerticalWorkItemJournalSplitNotification(SplitSetting.RIGHT_EXPANDED)); }
+                        // Command is always available.
+                        , null);
                 }
                 return _moveVerticalSplitEqualRightCommand;
             }
-        }
-
-        /// <summary>
-        /// Delete a WorkItem
-        /// </summary>
-        public void MoveVerticalSplitRight()
-        {
-            ModelEvent?.Invoke(this, new WorkItemJournalEvent(WorkItemJournalAction.MOVE_VERTICAL_SPLIT, SplitSetting.RIGHT_EXPANDED));
         }
         #endregion
 
@@ -206,53 +214,51 @@ namespace MyPA.Code
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="notification"></param>
         public void WorkItemJournalCreating()
         {
+            Console.WriteLine("in WorkItemJournalCreating");
             // If the application is not yet in add mode, prep it.
-            if (IsApplicationNotInAddMode)
-            {
+//            if (IsSelectedWorkItemJournalSaved == false)
+//            {
                 // Notify the UI that a new WorkItemJournal is being created.
                 // This changes the visible tab and sets the vertical split, and the focus to the Journal Title textbox.
-                ModelEvent?.Invoke(this, new WorkItemJournalEvent(WorkItemJournalAction.CREATING_WORK_ITEM_JOURNAL_ENTRY));
+                InvokeEvent(this, new WorkItemJournalCreatingNotification());
 
                 SelectedJournal = new WorkItemJournalEntry(_workItemID);
+//            }
 
-                AppMode = ApplicationMode.ADD_MODE;
-            }
-
-            else
-            { // Otherwise, respond to the button click.
+//            else
+//            { // Otherwise, respond to the button click.
 //                journalRepository.InsertWorkItemJournalEntry(_selectedJournal);
 //                WorkItemJournal.Add(_selectedJournal);
                 
-                AppMode = ApplicationMode.EDIT_MODE;
-            }
+//                AppMode = ApplicationMode.EDIT_MODE;
+//            }
 
         }
         #endregion
 
-        #region WorkItemJournalEditingCommand
-        RelayCommand _workItemJournalEditingCommand;
-        public ICommand WorkItemJournalEditingCommand
+        #region WorkItemJournalEntryDeleteCommand
+        RelayCommand _workItemJournalEntryDeletingCommand;
+        public ICommand WorkItemJournalEntryDeleteCommand
         {
             get
             {
-                if (_workItemJournalEditingCommand == null)
+                bool logical = GetAppPreferenceValueAsBool(PreferenceName.LOGICAL_DELETE);
+                if (_workItemJournalEntryDeletingCommand == null)
                 {
-                    _workItemJournalEditingCommand = new RelayCommand(
-                        () =>
-                        {
-                            // Notify the UI that a new WorkItemJournal is being created.
-                            // This changes the visible tab and sets the vertical split, and the focus to the Journal Title textbox.
-                            ModelEvent?.Invoke(this, new WorkItemJournalEvent(WorkItemJournalAction.EDITING_WORK_ITEM_JOURNAL_ENTRY));
-                        }, 
-                        null);
+                    _workItemJournalEntryDeletingCommand = new RelayCommand(
+                        () => { 
+                            journalRepository.DeleteWorkItemJournalEntry(_selectedJournal.WorkItemJournalID.Value, logical);
+                            WorkItemJournal.Remove(_selectedJournal);
+                        }
+                        , null);
                 }
-                return _workItemJournalEditingCommand;
+                return _workItemJournalEntryDeletingCommand;
             }
         }
         #endregion
-
     }
 
 

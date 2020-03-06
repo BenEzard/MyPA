@@ -9,5 +9,6 @@
             <Setter Property="CornerRadius" Value="5" />
         </Style>
         <ui:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        <ui:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter" />
     </Application.Resources>
 </Application>

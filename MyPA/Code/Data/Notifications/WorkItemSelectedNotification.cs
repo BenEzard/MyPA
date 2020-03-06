@@ -2,11 +2,11 @@
 
 namespace MyPA.Code.Data.Actions
 {
-    public class WorkItemSelectedAction
+    public class WorkItemSelectedNotification : BaseNotification
     {
         public WorkItem WorkItem {get; set; }
 
-        public WorkItemSelectedAction(WorkItem workItem)
+        public WorkItemSelectedNotification(WorkItem workItem)
         {
             WorkItem = workItem;
         }

@@ -6,6 +6,7 @@ namespace MyPA.Code.Data.Services
 {
     public class WorkItemJournalRepository : BaseRepository, IWorkItemJournalRepository
     {
+
         /// <summary>
         /// Load all of the Journals for a specified WorkItem.
         /// </summary>
@@ -20,7 +21,10 @@ namespace MyPA.Code.Data.Services
                 using (var cmd = new SQLiteCommand(connection))
                 {
                     connection.Open();
-                    cmd.CommandText = "SELECT * FROM vwActiveWorkItemJournal WHERE WorkItem_ID = @workItemID ORDER BY CreationDateTime ASC";
+                    cmd.CommandText = "SELECT *" +
+                        " FROM vwActiveWorkItemJournal" +
+                        " WHERE WorkItem_ID = @workItemID" +
+                        " ORDER BY CreationDateTime ASC";
                     cmd.Parameters.AddWithValue("@workItemID", workItemID);
 
                     using (SQLiteDataReader reader = cmd.ExecuteReader())
@@ -29,7 +33,8 @@ namespace MyPA.Code.Data.Services
                         {
                             WorkItemJournalEntry journal = new WorkItemJournalEntry();
                             journal.WorkItem_ID = Convert.ToInt32(reader["WorkItem_ID"]);
-                            journal.Title = (string)reader["Header"];
+                            if (reader["Header"].GetType() != typeof(DBNull))
+                                journal.Title = (string)reader["Header"];
                             if (reader["Entry"].GetType() != typeof(DBNull))
                                 journal.Entry = (string)reader["Entry"];
                             journal.CreationDateTime = DateTime.Parse(reader["CreationDateTime"].ToString());
@@ -45,6 +50,11 @@ namespace MyPA.Code.Data.Services
             return rValue;
         }
     
+        /// <summary>
+        /// Insert a WorkItemJournalEntry record into the database.
+        /// </summary>
+        /// <param name="journalEntry"></param>
+        /// <returns></returns>
         public int InsertWorkItemJournalEntry(WorkItemJournalEntry journalEntry)
         {
             int workItemJournalEntryID = -1;
@@ -74,6 +84,10 @@ namespace MyPA.Code.Data.Services
             return workItemJournalEntryID;
         }
 
+        /// <summary>
+        /// Update a WorkItemJournalEntry record into the database.
+        /// </summary>
+        /// <param name="journalEntry"></param>
         public void UpdateWorkItemJournalEntry(WorkItemJournalEntry journalEntry)
         {
             DateTime modificationDate = DateTime.Now;
@@ -99,5 +113,77 @@ namespace MyPA.Code.Data.Services
             }
         }
 
+        /// <summary>
+        /// Delete all of the WorkItemJournalEntries, either physically or logically.
+        /// </summary>
+        /// <param name="workItemID"></param>
+        /// <param name="logicalDelete"></param>
+        public void DeleteAllWorkItemJournalEntries(int workItemID, bool logicalDelete)
+        {
+            using (var connection = new SQLiteConnection(dbConnectionString))
+            {
+                using (var cmd = new SQLiteCommand(connection))
+                {
+                    connection.Open();
+                    if (logicalDelete)
+                    {
+                        cmd.CommandText = "UPDATE WorkItemJournal" +
+                            " SET DeletionDateTime = @deleteDate" +
+                            " WHERE WorkItem_ID = @workItemID";
+                        cmd.Parameters.AddWithValue("@deleteDate", DateTime.Now);
+                        cmd.Parameters.AddWithValue("@workItemID", workItemID);
+                    }
+                    else
+                    {
+                        cmd.CommandText = "DELETE WorkItemJournal" +
+                            " WHERE WorkItem_ID = @workItemID";
+                        cmd.Parameters.AddWithValue("@workItemID", workItemID);
+                    }
+                    cmd.ExecuteNonQuery();
+                }
+                connection.Close();
+            }
+        }
+
+        /// <summary>
+        /// Delete a WorkItemJournalEntry, either physically or logically.
+        /// </summary>
+        /// <param name="workItemJournalID"></param>
+        /// <param name="logicalDelete"></param>
+        public void DeleteWorkItemJournalEntry(int workItemJournalID, bool logicalDelete)
+        {
+            using (var connection = new SQLiteConnection(dbConnectionString))
+            {
+                using (var cmd = new SQLiteCommand(connection))
+                {
+                    connection.Open();
+                    if (logicalDelete)
+                    {
+                        cmd.CommandText = "UPDATE WorkItemJournal" +
+                            " SET DeletionDateTime = @deleteDate" +
+                            " WHERE Journal_ID = @workItemJournalID";
+                        cmd.Parameters.AddWithValue("@deleteDate", DateTime.Now);
+                        cmd.Parameters.AddWithValue("@workItemJournalID", workItemJournalID);
+                    }
+                    else
+                    {
+                        cmd.CommandText = "DELETE WorkItemJournal" +
+                            " WHERE Journal_ID = @workItemJournalID";
+                        cmd.Parameters.AddWithValue("@workItemJournalID", workItemJournalID);
+                    }
+                    cmd.ExecuteNonQuery();
+                }
+                connection.Close();
+            }
+        }
+
+        /// <summary>
+        /// Get WorkItemJournal preferences.
+        /// </summary>
+        /// <returns></returns>
+        Dictionary<PreferenceName, Preference> IWorkItemJournalRepository.GetWorkItemJournalPreferences()
+        {
+            return this.GetPreferences("WorkItemJournal");
+        }
     }
 }

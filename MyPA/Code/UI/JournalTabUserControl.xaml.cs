@@ -1,5 +1,4 @@
 ﻿using MyPA.Code.Data.Actions;
-using MyPA.Code.Data.Events;
 using System;
 using System.Windows;
 using System.Windows.Controls;
@@ -12,7 +11,7 @@ namespace MyPA.Code.UI
     /// </summary>
     public partial class JournalTabUserControl : UserControl
     {
-        private static string TAB_NAME = "TabTaskJournal";
+        private const string TAB_NAME = "TabTaskJournal";
 
         public JournalTabUserControl()
         {
@@ -45,29 +44,21 @@ namespace MyPA.Code.UI
         /// <summary>
         /// Receives events from the WorkItemJournalViewModel.
         /// </summary>
-        /// <param name="o"></param>
-        /// <param name="e"></param>
-        public void ModelEventListener(Object o, WorkItemJournalEvent e)
+        /// <param name="sender"></param>
+        /// <param name="notification"></param>
+        public void ModelEventListener(Object sender, BaseNotification notification)
         {
-            if (e.EventAction == WorkItemJournalAction.MOVE_VERTICAL_SPLIT)
-            {
-                MoveVerticalSplit(e.VerticalSplit);
-            }
-
-            if (e.EventAction == WorkItemJournalAction.CREATING_WORK_ITEM_JOURNAL_ENTRY)
+            if (notification is WorkItemJournalCreatingNotification)
             {
                 Messenger.Default.Send(new WorkItemSelectTabAction(TAB_NAME));
                 MoveVerticalSplit(SplitSetting.RIGHT_EXPANDED);
                 JournalTitleField.Focus();
             }
-
-            if (e.EventAction == WorkItemJournalAction.EDITING_WORK_ITEM_JOURNAL_ENTRY)
+            else if (notification is MoveVerticalWorkItemJournalSplitNotification)
             {
-                Messenger.Default.Send(new WorkItemSelectTabAction(TAB_NAME));
-                MoveVerticalSplit(SplitSetting.RIGHT_EXPANDED);
-                JournalEntryField.Focus();
+                var notificationDetails = (MoveVerticalWorkItemJournalSplitNotification)notification;
+                MoveVerticalSplit(notificationDetails.VerticalSplit);
             }
-
         }
 
         private void MoveVerticalSplit(SplitSetting verticalSplit)
@@ -92,6 +83,11 @@ namespace MyPA.Code.UI
             }
         }
 
+        /// <summary>
+        /// Event fired whenever the WorkItem Journal Entry (Title or Body) is changed.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Journal_TextChanged(object sender, RoutedEventArgs e)
         {
             ((WorkItemJournalViewModel)DataContext).UpdateJournalEntry();

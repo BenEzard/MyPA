@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MyPA.Code.Data.Actions;
+using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -13,11 +14,12 @@ namespace MyPA.Code.UI
         public WorkItemUserControl()
         {
             InitializeComponent();
+            ((WorkItemViewModel)DataContext).ModelEvent += ModelEventListener;
             RegisterUITabs();
         }
 
         /// <summary>
-        /// Register all of the UI tabs with the model.
+        /// Register all of the WorkItem UI tabs with the model.
         /// </summary>
         private void RegisterUITabs()
         {
@@ -65,6 +67,20 @@ namespace MyPA.Code.UI
         {
             var dd = new DueDateDialog(((WorkItemViewModel)DataContext).SelectedWorkItem.CurrentWorkItemDueDate);
             dd.ShowDialog();
+        }
+
+        /// <summary>
+        /// Catch UI events sent from the Model.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="action"></param>
+        public void ModelEventListener(Object sender, BaseNotification action)
+        {
+            if (action is WorkItemCreatingNotification)
+            {
+                Console.WriteLine("WorkItemCreatingAction in usercontrol");
+                SelectedTaskTitleField.Focus();
+            }
         }
 
     }

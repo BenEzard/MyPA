@@ -1,7 +1,7 @@
-﻿using System;
+﻿using MyPA.Code.Data.Actions;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data.SQLite;
 
 namespace MyPA.Code
 {
@@ -9,6 +9,9 @@ namespace MyPA.Code
     {
         public event PropertyChangedEventHandler PropertyChanged;
         public Dictionary<PreferenceName, Preference> Preferences = null;
+
+        public delegate void ModelEventHandler(object obj, BaseNotification e);
+        public event ModelEventHandler ModelEvent;
 
         protected void OnPropertyChanged(string propertyName)
         {
@@ -18,6 +21,12 @@ namespace MyPA.Code
             }
         }
 
+        public void InvokeEvent(object obj, BaseNotification action)
+        {
+            ModelEvent?.Invoke(obj, action);
+        }
+
+        #region AppPreferences
         /// <summary>
         /// Return an Application Preference from the collection (in cache), as a string value.
         /// </summary>
@@ -75,5 +84,6 @@ namespace MyPA.Code
                 throw new ArgumentException($"Cannot find Preference: {settingName}");
             return Double.Parse(rValue.Value);
         }
+        #endregion
     }
 }

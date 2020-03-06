@@ -53,7 +53,7 @@ namespace MyPA.Code.Data.Models
         /// Return the number of WorkItemStatusEntries loaded for this WorkItem.
         /// </summary>
         public int WorkItemStatusEntryCount {
-           get => _workItemStatusEntries.Count;
+            get => _workItemStatusEntries.Count;
         }
 
         public WorkItemStatusEntry CurrentWorkItemStatusEntry
@@ -65,7 +65,7 @@ namespace MyPA.Code.Data.Models
                 {
                     rValue = null;
                 }
-                else 
+                else
                     rValue = _workItemStatusEntries[0];
 
                 return rValue;
@@ -109,7 +109,7 @@ namespace MyPA.Code.Data.Models
         /// Generates a string which describes how long since the WorkItem was created.
         /// Bound to WorkItemUserControl.
         /// </summary>
-        public string TimeSinceCreationString { 
+        public string TimeSinceCreationString {
             get
             {
                 string rValue = "";
@@ -121,10 +121,24 @@ namespace MyPA.Code.Data.Models
             }
         }
 
+        /// <summary>
+        /// Create a New WorkItem.
+        /// Will automatically be created with NOW() as the CreationDateTime.
+        /// </summary>
         public WorkItem()
         {
-            WorkItemID = -1;
             CreationDateTime = DateTime.Now;
+            OnPropertyChanged("");
+        }
+
+        /// <summary>
+        /// Create a New WorkItem.
+        /// <param name="workItemID"></param>
+        /// <param name="creation"></param>
+        public WorkItem(int workItemID, DateTime creation)
+        {
+            WorkItemID = workItemID;
+            CreationDateTime = creation;
             OnPropertyChanged("");
         }
 

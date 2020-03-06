@@ -40,7 +40,7 @@
                     </StackPanel>
                     </Border>
                 <ListBox Name="OverviewListBox" 
-                    ItemsSource="{Binding WorkItemOverview}" IsEnabled="{Binding IsApplicationNotInAddMode}" SelectedItem="{Binding SelectedWorkItem}"
+                    ItemsSource="{Binding WorkItemOverview}" IsEnabled="{Binding IsSelectedWorkItemSaved}" SelectedItem="{Binding SelectedWorkItem}"
                     Grid.Row="0" SelectionMode="Single" 
                          ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Visible"
                              BorderThickness="0">
@@ -183,7 +183,7 @@
 
                         </DockPanel>
                     </TabItem>
-                        <TabItem Name="TabTaskJournal" IsEnabled="{Binding IsApplicationInEditMode}" Height="34" VerticalAlignment="Top" >
+                        <TabItem Name="TabTaskJournal" IsEnabled="{Binding IsSelectedWorkItemSaved}" Height="34" VerticalAlignment="Top" >
                         <TabItem.Header>
                             <Image Width="26" Source="../../Images/book_open.png"></Image>
                         </TabItem.Header>
@@ -195,13 +195,13 @@
                 <StackPanel Grid.Column="0" Grid.Row="2" Orientation="Horizontal"
                              Visibility="{Binding IsWorkItemSelected, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <TextBlock Text="Progress:" Margin="5" VerticalAlignment="Center" />
-                    <Slider x:Name="WorkItemProgressSlider" IsEnabled="{Binding CanDueDateBeChanged}"
+                    <Slider x:Name="WorkItemProgressSlider" IsEnabled="{Binding IsSelectedWorkItemSaved}"
                            Value="{Binding SelectedWorkItemCompletion}"
                                 TickFrequency="10" TickPlacement="BottomRight" Margin="5" VerticalAlignment="Center"
                                 IsSnapToTickEnabled="False" IsMoveToPointEnabled="True"
                                 Minimum="0" Maximum="100" Width="120" />
                     <TextBlock Padding="5,5,5,5" VerticalAlignment="Center">Status</TextBlock>
-                    <ComboBox Name="WorkItemStatusComboBox" 
+                    <ComboBox Name="WorkItemStatusComboBox" IsEnabled="{Binding IsSelectedWorkItemSaved}"
                               ItemsSource="{Binding WorkItemStatuses}" DisplayMemberPath="StatusLabel"
                               SelectedItem="{Binding SelectedWorkItemStatus}"
                               VerticalAlignment="Center"
@@ -211,11 +211,11 @@
                 <StackPanel VerticalAlignment="Center" Orientation="Horizontal" HorizontalAlignment="Right"
                     Grid.Row="2" Grid.Column="0" >
                     <Button Name="CancelButton" Content="Cancel" 
-                        Visibility="{Binding IsApplicationInAddMode, Converter={StaticResource BooleanToVisibilityConverter}}"
+                        Visibility="{Binding IsSelectedWorkItemSaved, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
                         Command="{Binding CancelWorkItemCreatingCommand}"
                         Margin="5" Padding="5" />
                         <Button Name="SaveButton" Command="{Binding WorkItemSaveNewCommand}" 
-                            Margin="5" Padding="2" Visibility="{Binding IsApplicationInAddMode, Converter={StaticResource BooleanToVisibilityConverter}}" >
+                            Margin="5" Padding="2" Visibility="{Binding IsSelectedWorkItemSaved, Converter={StaticResource InverseBooleanToVisibilityConverter}}" >
                         <StackPanel Orientation="Horizontal" Margin="5,0,5,0">
                                 <Image Source="../../Images/report_add.png" Width="26" Margin="0,0,5,0"/>
                             <TextBlock Text="Save" VerticalAlignment="Center" />

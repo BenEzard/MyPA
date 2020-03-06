@@ -21,7 +21,7 @@ namespace MyPA
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             ((ApplicationViewModel)DataContext).SaveWindowLocation(this.Height, this.Width, this.Top, this.Left);
-            ((ApplicationViewModel)DataContext).ApplicationClosingNotification();
+            ((ApplicationViewModel)DataContext).SendApplicationClosingNotification();
         }
 
         /// <summary>

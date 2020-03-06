@@ -22,11 +22,18 @@
             <Button Background="Transparent" BorderThickness="0" Command="{Binding WorkItemJournalCreatingCommand}">
                 <Image Source="../../Images/journal_add.png" Width="26" ToolTip="Add New Journal Entry" />
             </Button>
-            <Button Background="Transparent" BorderThickness="0" Command="{Binding WorkItemJournalEditingCommand}">
-                <Image Source="../../Images/journal_edit.png" Width="26" ToolTip="Edit Journal Entry" />
-            </Button>
-            <Button Background="Transparent" BorderThickness="0">
-                <Image Source="../../Images/journal_delete.png" Width="26" ToolTip="Delete Journal Entry" />
+            <Button Background="Transparent" BorderThickness="0" Command="{Binding WorkItemJournalEntryDeleteCommand}" IsEnabled="{Binding IsJournalEntrySelected}">
+                <Image Source="../../Images/journal_delete.png" Width="26" ToolTip="Delete Journal Entry">
+                    <Image.Style>
+                        <Style TargetType="Image">
+                            <Style.Triggers>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Opacity" Value="0.5" />
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Image.Style>
+                </Image>
             </Button>
             <Button x:Name="ResetVerticalSplit" Command="{Binding MoveVerticalSplitEqualCommand}" Background="Transparent" BorderThickness="0" Margin="20,0,0,0">
                 <Image Source="../../Images/application_tile_horizontal.png" Width="26" ToolTip="Reset Vertical Split" />
@@ -47,7 +54,7 @@
             </Grid.ColumnDefinitions>
             <ListView x:Name="JournalList" Grid.Row="0" Grid.Column="0"
                 ItemsSource="{Binding WorkItemJournal}" SelectedItem="{Binding SelectedJournal}"
-                Background="LightYellow">
+                Background="LightYellow" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <Grid>
@@ -62,7 +69,7 @@
                             <StackPanel>
                                 <Border BorderBrush="LightGray" BorderThickness="0,0,0,2">
                                     <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="{Binding Title}" Grid.Row="0" Grid.Column="1" Margin="0,5,20,0"  Foreground="DarkGray" />
+                                        <TextBlock Text="{Binding Title}" Grid.Row="0" Grid.Column="1" Margin="0,5,20,0"  Foreground="DarkGray" TextWrapping="WrapWithOverflow"/>
                                         <TextBlock Text="{Binding CreationDateTime, StringFormat=\{0:ddd dd/MM HH:mm\}}" Grid.Row="0" Grid.Column="0" Margin="0,5,0,0" Foreground="LightGray" />
                                     </StackPanel>
                                 </Border>
@@ -83,13 +90,15 @@
             <StackPanel Grid.Column="2" Orientation="Vertical" Margin="10">
                 <StackPanel Orientation="Horizontal">
                     <TextBlock Text="Heading:" />
-                    <TextBox x:Name="JournalTitleField" Text="{Binding SelectedJournal.Title}" LostFocus="Journal_TextChanged"
+                    <TextBox x:Name="JournalTitleField" Text="{Binding SelectedJournal.Title}" IsEnabled="{Binding IsJournalEntrySelected}"
+                             LostFocus="Journal_TextChanged"
                         Margin="5,0,0,0" Width="250" Background="LightYellow" />
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
                     <TextBlock Text="Entry:" />
-                    <TextBox Name="JournalEntryField" Text="{Binding SelectedJournal.Entry}" LostFocus="Journal_TextChanged"
+                    <TextBox Name="JournalEntryField" Text="{Binding SelectedJournal.Entry}"  IsEnabled="{Binding IsJournalEntrySelected}" 
+                        LostFocus="Journal_TextChanged"
                         AcceptsReturn="True" AcceptsTab="True" TextWrapping="Wrap" 
                         Width="250" MinHeight="150" MaxHeight="200"
                         ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Auto"

@@ -1,4 +1,5 @@
 ﻿using MyPA.Code.Data.Actions;
+using MyPA.Code.Data.Models;
 using MyPA.Code.Data.Services;
 using MyPA.Code.UI.Util;
 using System.Windows.Input;
@@ -7,12 +8,37 @@ namespace MyPA.Code
 {
     public class ApplicationViewModel : BaseViewModel
     {
-        private IApplicationRepository applicationRepository = new ApplicationRepository();
+        private IApplicationRepository applicationRepository = ApplicationRepository.Instance;
+
+        private WorkItem _selectedWorkItem = null;
+        public WorkItem SelectedWorkItem
+        {
+            get => _selectedWorkItem;
+            set
+            {
+                _selectedWorkItem = value;
+                OnPropertyChanged("");
+            }
+        }
+
+        public bool IsWorkItemSelected
+        {
+            get
+            {
+                return _selectedWorkItem != null ? true : false;
+            }
+        }
 
         public ApplicationViewModel()
         {
             // Load Preferences
             Preferences = applicationRepository.GetApplicationPreferences();
+            Messenger.Default.Register<WorkItemSelectedNotification>(this, OnWorkItemSelectedNotification);
+        }
+
+        public void OnWorkItemSelectedNotification(WorkItemSelectedNotification notification)
+        {
+            SelectedWorkItem = notification.WorkItem;
         }
 
         public string ApplicationNameAndVersion
@@ -56,6 +82,9 @@ namespace MyPA.Code
         }
 
         #region WorkItemCreatingCommand
+        /// <summary>
+        /// The WorkItemCreatingCommand sends out a message notifying listeners to the fact that a new WorkItem is being created.
+        /// </summary>
         RelayCommand _workItemCreatingCommand;
         public ICommand WorkItemCreatingCommand
         {
@@ -65,7 +94,7 @@ namespace MyPA.Code
                 {
                     _workItemCreatingCommand = new RelayCommand(
                         /// Send out a notification that a WorkItem has begun creation.
-                        () => { Messenger.Default.Send(new WorkItemCreatingAction()); },
+                        () => { Messenger.Default.Send(new WorkItemCreatingNotification()); },
                         /// Can a New WorkItem be created at the moment?
                         () => { return true; }
                     );
@@ -81,20 +110,18 @@ namespace MyPA.Code
         {
             get
             {
+                bool logical = GetAppPreferenceValueAsBool(PreferenceName.LOGICAL_DELETE);
+
                 if (_workItemDeletingCommand == null)
                 {
-                    _workItemDeletingCommand = new RelayCommand(WorkItemDeleting, null);
+                    _workItemDeletingCommand = new RelayCommand(
+                        // Send out a 'Work Item Deleting' notification.
+                        () => { Messenger.Default.Send(new WorkItemDeletingNotification(_selectedWorkItem, logical)); }, 
+                        // Button availability is controlled by IsEnabled binding instead of here.
+                        null);
                 }
                 return _workItemDeletingCommand;
             }
-        }
-
-        /// <summary>
-        /// Delete a WorkItem
-        /// </summary>
-        public void WorkItemDeleting()
-        {
-            Messenger.Default.Send<AppAction>(AppAction.DELETING_WORK_ITEM);
         }
         #endregion
 
@@ -111,7 +138,7 @@ namespace MyPA.Code
                 {
                     _workItemJournalCreatingCommand = new RelayCommand(
                         // Send notification that a WorkItemJournal should begin creation
-                        () => { Messenger.Default.Send(new WorkItemJournalCreatingAction()); }, 
+                        () => { Messenger.Default.Send(new WorkItemJournalCreatingNotification()); }, 
                         // Can a New WorkItem Journal be added now?
                         () => { return true; });
                 }
@@ -140,9 +167,12 @@ namespace MyPA.Code
         /// <summary>
         /// Send out a notification that the application is closing.
         /// </summary>
-        public void ApplicationClosingNotification()
+        public void SendApplicationClosingNotification()
         {
-            Messenger.Default.Send<AppAction>(AppAction.APPLICATION_CLOSING);
+            if (GetAppPreferenceValueAsBool(PreferenceName.SAVE_SESSION_ON_EXIT))
+                Messenger.Default.Send(new SaveSessionNotification());
+
+            Messenger.Default.Send(new ApplicationClosingNotification());
         }
     }
 }

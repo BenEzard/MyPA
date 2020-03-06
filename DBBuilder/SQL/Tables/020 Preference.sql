@@ -20,6 +20,9 @@ VALUES	/* Application Values - Non configurable */
 		('APPLICATION_HEIGHT', 'Application;', '750', '750', 'The window''s size (height)', 'Y'),
 		('SAVE_WINDOW_COORDS_ON_EXIT', 'Application;', '1', '1', 'Should the window''s location and size be saved when the application exits?', 'Y'),
 		('LOGICAL_DELETE', 'Application;', '1', '1', 'Should all deletes be done logically?', 'Y'),
+		('SAVE_SESSION_ON_EXIT', 'Application;WorkItem;', '1', '1', 'Should the last selected WorkItem be saved for restoration?', 'Y'),
+		('LAST_SELECTED_WORK_ITEM', 'WorkItem;', '1', '1', 'The last selected WorkItem', 'Y'),
+		('LAST_SELECTED_WORK_ITEM_TAB', 'WorkItem;', '1', '0', 'The last selected WorkItem tab index.', 'Y'),
 
 		/* Due Date variables */
 		('LOAD_STALE_DAYS', 'WorkItem;', '100', '100', 'Load Work Items that were completed this many days ago.', 'Y'),

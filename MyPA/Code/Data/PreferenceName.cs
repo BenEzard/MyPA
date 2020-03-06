@@ -33,6 +33,9 @@
         LOAD_STALE_DAYS, /* Load this number of days-old inactive Work Items */
         STATUS_COMPLETE_TO_ACTIVE,
         USE_OVERDUE_COLOURING,
+        SAVE_SESSION_ON_EXIT,
+        LAST_SELECTED_WORK_ITEM,
+        LAST_SELECTED_WORK_ITEM_TAB,
 
 
         /*JOURNAL_ORDERING,

@@ -4,6 +4,9 @@ namespace MyPA.Code.Data.Services
 {
     internal interface IWorkItemJournalRepository
     {
+
+        Dictionary<PreferenceName, Preference> GetWorkItemJournalPreferences();
+
         /// <summary>
         /// Get all of the WorkItemJournal entries for a specified WorkItem ID.
         /// </summary>
@@ -19,5 +22,19 @@ namespace MyPA.Code.Data.Services
         int InsertWorkItemJournalEntry(WorkItemJournalEntry journal);
 
         void UpdateWorkItemJournalEntry(WorkItemJournalEntry journal);
+
+        /// <summary>
+        /// Delete all of the WorkItemJournalEntries for a given WorkItem.
+        /// </summary>
+        /// <param name="workItemID"></param>
+        /// <param name="logicalDelete"></param>
+        void DeleteAllWorkItemJournalEntries(int workItemID, bool logicalDelete);
+
+        /// <summary>
+        /// Delete a single WorkItemJournalEntry.
+        /// </summary>
+        /// <param name="workItemJournalID"></param>
+        /// <param name="logicalDelete"></param>
+        void DeleteWorkItemJournalEntry(int workItemJournalID, bool logicalDelete);
     }
 }
