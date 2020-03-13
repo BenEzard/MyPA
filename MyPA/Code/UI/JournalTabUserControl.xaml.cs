@@ -17,6 +17,8 @@ namespace MyPA.Code.UI
         {
             InitializeComponent();
             ((WorkItemJournalViewModel)DataContext).ModelEvent += ModelEventListener;
+            ((WorkItemJournalViewModel)DataContext).RegisterJournalUITab(JournalTabType.JOURNAL_OVERVIEW, "TabJournalContents");
+            ((WorkItemJournalViewModel)DataContext).RegisterJournalUITab(JournalTabType.JOURNAL_DETAIL, "TabJournalDetail");
         }
 
         private void VerticalGridSplitter_MouseDoubleClick(object sender, MouseButtonEventArgs e)

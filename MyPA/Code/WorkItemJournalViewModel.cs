@@ -3,6 +3,7 @@ using MyPA.Code.Data.Services;
 using MyPA.Code.UI;
 using MyPA.Code.UI.Util;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 
@@ -59,6 +60,9 @@ namespace MyPA.Code
             }
         }
 
+/*        /// <summary>
+        /// 
+        /// </summary>
         public bool IsSelectedWorkItemJournalSaved
         {
             get
@@ -71,10 +75,31 @@ namespace MyPA.Code
                     else
                         rValue = true;
                 }
+                return rValue;
+            }   
+        }*/
+
+        public bool AddingWorkItemJournal
+        {
+            get
+            {
+                bool rValue = false;
+                if (_selectedJournal == null)
+                    Console.WriteLine($"AddingWorkItemJournal: _selectedJournal is null");
+                else
+                    Console.WriteLine($"AddingWorkItemJournal: {_selectedJournal.WorkItem_ID}");
+                
+                if (_selectedJournal == null) {
+                    rValue = false;
+                }
+                else
+                {
+                    if (_selectedJournal.WorkItem_ID == -1)
+                        rValue = true;
+                }
 
                 return rValue;
             }
-            
         }
 
         public WorkItemJournalViewModel()
@@ -123,7 +148,6 @@ namespace MyPA.Code
         /// <param name="notification"></param>
         public void OnWorkItemSelectedNotification(WorkItemSelectedNotification notification)
         {
-            Console.WriteLine($"WorkItem selection has been received in Journal");
             // If WorkItem has not been instantiated or saved yet, then don't try to do anything with the journals.
             if ((notification.WorkItem == null) || (notification.WorkItem.WorkItemID.HasValue == false) || (notification.WorkItem.WorkItemID.Value == -1))
                 return;
@@ -217,24 +241,13 @@ namespace MyPA.Code
         /// <param name="notification"></param>
         public void WorkItemJournalCreating()
         {
-            Console.WriteLine("in WorkItemJournalCreating");
-            // If the application is not yet in add mode, prep it.
-//            if (IsSelectedWorkItemJournalSaved == false)
-//            {
-                // Notify the UI that a new WorkItemJournal is being created.
-                // This changes the visible tab and sets the vertical split, and the focus to the Journal Title textbox.
-                InvokeEvent(this, new WorkItemJournalCreatingNotification());
+            SelectedJournalTabIndex = GetJournalUITabIndex(JournalTabType.JOURNAL_DETAIL);
 
-                SelectedJournal = new WorkItemJournalEntry(_workItemID);
-//            }
-
-//            else
-//            { // Otherwise, respond to the button click.
-//                journalRepository.InsertWorkItemJournalEntry(_selectedJournal);
-//                WorkItemJournal.Add(_selectedJournal);
-                
-//                AppMode = ApplicationMode.EDIT_MODE;
-//            }
+            // Notify the UI that a new WorkItemJournal is being created.
+            // This changes the visible tab and sets the vertical split, and the focus to the Journal Title textbox.
+            InvokeEvent(this, new WorkItemJournalCreatingNotification());
+            
+            SelectedJournal = new WorkItemJournalEntry(_workItemID);
 
         }
         #endregion
@@ -257,6 +270,119 @@ namespace MyPA.Code
                 }
                 return _workItemJournalEntryDeletingCommand;
             }
+        }
+        #endregion
+
+        #region SelectJournalDetailTabCommand
+        RelayCommand _workItemJournalSelectDetailTabCommand;
+        public ICommand WorkItemJournalSelectDetailTabCommand
+        {
+            get
+            {
+                if (_workItemJournalSelectDetailTabCommand == null)
+                {
+                    _workItemJournalSelectDetailTabCommand = new RelayCommand(
+                        // What to do when the button is selected
+                        () => {
+                            SelectedJournalTabIndex = GetJournalUITabIndex(JournalTabType.JOURNAL_DETAIL);
+                        },
+                        // When the button is not available
+                        null
+                        );
+                }
+                return _workItemJournalSelectDetailTabCommand;
+            }
+        }
+        #endregion
+
+        #region SelectJournalOverviewTabCommand
+        RelayCommand _workItemJournalOverviewTabCommand;
+        public ICommand WorkItemJournalSelectOverviewTabCommand
+        {
+            get
+            {
+                if (_workItemJournalOverviewTabCommand == null)
+                {
+                    _workItemJournalOverviewTabCommand = new RelayCommand(
+                        // What to do when the button is selected
+                        () => {
+                            SelectedJournalTabIndex = GetJournalUITabIndex(JournalTabType.JOURNAL_OVERVIEW);
+                        },
+                        // When the button is not available
+                        null
+                        );
+                }
+                return _workItemJournalOverviewTabCommand;
+            }
+        }
+        #endregion
+
+        #region CancelJournalAdditionCommand
+        RelayCommand _cancelJournalAddCommand;
+        public ICommand CancelWorkItemJournalAddCommand
+        {
+            get
+            {
+                if (_cancelJournalAddCommand == null)
+                {
+                    _cancelJournalAddCommand = new RelayCommand(
+                        // What to do when the button is selected
+                        () => {
+                            // Return to the overview tab.
+                            SelectedJournalTabIndex = GetJournalUITabIndex(JournalTabType.JOURNAL_OVERVIEW);
+
+                            // Send out an event to get the vertical split to return to 50%/50%
+                            InvokeEvent(this, new MoveVerticalWorkItemJournalSplitNotification(SplitSetting.EQUAL_SPLIT));
+
+                            SelectedJournal = null;
+                        },
+                        // When the button is not available
+                        null
+                        );
+                }
+                return _cancelJournalAddCommand;
+            }
+        }
+        #endregion
+
+        #region JournalUITabs
+        /// <summary>
+        /// List of tabs that are available on the UI.
+        /// </summary>
+        private Dictionary<JournalTabType, UITab> _journalUITabs = new Dictionary<JournalTabType, UITab>();
+
+        public void RegisterJournalUITab(JournalTabType tabType, string tabName)
+        {
+            int currentCounter = _journalUITabs.Count;
+            _journalUITabs.Add(tabType, new UITab(tabName, currentCounter));
+        }
+
+        /// <summary>
+        /// Records the int value of the currently selected Journal TabItem.
+        /// </summary>
+        private int _selectedJournalTabIndex;
+        public int SelectedJournalTabIndex
+        {
+            get => _selectedJournalTabIndex;
+            set
+            {
+                _selectedJournalTabIndex = value;
+                OnPropertyChanged("");
+            }
+        }
+
+        /// <summary>
+        /// Return the tab index based on the TabItem Name.
+        /// </summary>
+        /// <param name="tabName"></param>
+        /// <returns></returns>
+        private int GetJournalUITabIndex(JournalTabType type)
+        {
+            if (_journalUITabs.Count == 0)
+                return -1;
+
+            _journalUITabs.TryGetValue(type, out UITab tab);
+            return tab.TabIndex;
         }
         #endregion
     }

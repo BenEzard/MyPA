@@ -35,6 +35,12 @@
                     </Image.Style>
                 </Image>
             </Button>
+            <Button x:Name="SelectContentsTab" Command="{Binding WorkItemJournalSelectOverviewTabCommand}" Background="Transparent" BorderThickness="0" Margin="20,0,0,0">
+                <Image Source="../../Images/application_view_list.png" Width="26" ToolTip="View Journal Contents" />
+            </Button>
+            <Button x:Name="SelectDetailTab" Command="{Binding WorkItemJournalSelectDetailTabCommand}" Background="Transparent" BorderThickness="0">
+                <Image Source="../../Images/application_form.png" Width="26" ToolTip="View Journal Detail" />
+            </Button>
             <Button x:Name="ResetVerticalSplit" Command="{Binding MoveVerticalSplitEqualCommand}" Background="Transparent" BorderThickness="0" Margin="20,0,0,0">
                 <Image Source="../../Images/application_tile_horizontal.png" Width="26" ToolTip="Reset Vertical Split" />
             </Button>
@@ -87,37 +93,84 @@
             
             <GridSplitter Name="VerticalGridSplitter" Width="2" Grid.Column="1" HorizontalAlignment="Stretch" Background="LightGray" MouseDoubleClick="VerticalGridSplitter_MouseDoubleClick" />
 
-            <StackPanel Grid.Column="2" Orientation="Vertical" Margin="10">
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="Heading:" />
-                    <TextBox x:Name="JournalTitleField" Text="{Binding SelectedJournal.Title}" IsEnabled="{Binding IsJournalEntrySelected}"
-                             LostFocus="Journal_TextChanged"
-                        Margin="5,0,0,0" Width="250" Background="LightYellow" />
-                </StackPanel>
+            <TabControl Grid.Column="2" BorderThickness="0" SelectedIndex="{Binding SelectedJournalTabIndex}">
+                <TabControl.ItemContainerStyle>
+                    <Style TargetType="{x:Type TabItem}">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                    </Style>
+                </TabControl.ItemContainerStyle>
+                <TabItem Header="TabJournalContents">
+                    <StackPanel Orientation="Vertical" Margin="5,0,0,0" HorizontalAlignment="Stretch">
+                        <TextBlock Text="Contents:" HorizontalAlignment="Stretch"/>
+                        <ListBox x:Name="JournalContents" ItemsSource="{Binding WorkItemJournal}" SelectedItem="{Binding SelectedJournal}"
+                                 MaxHeight="200">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{Binding Title}" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                            
+                        </ListBox>
+                    </StackPanel>
+                </TabItem>
+                <TabItem Header="TabJournalDetail">
+                    <StackPanel Orientation="Vertical" Margin="10">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Heading:" />
+                            <TextBox x:Name="JournalTitleField" Text="{Binding SelectedJournal.Title}" IsEnabled="{Binding IsJournalEntrySelected}"
+                                     LostFocus="Journal_TextChanged"
+                                Margin="5,0,0,0" Width="250" Background="LightYellow" />
+                        </StackPanel>
 
-                <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
-                    <TextBlock Text="Entry:" />
-                    <TextBox Name="JournalEntryField" Text="{Binding SelectedJournal.Entry}"  IsEnabled="{Binding IsJournalEntrySelected}" 
-                        LostFocus="Journal_TextChanged"
-                        AcceptsReturn="True" AcceptsTab="True" TextWrapping="Wrap" 
-                        Width="250" MinHeight="150" MaxHeight="200"
-                        ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Auto"
-                        Margin="22,0,0,0" Background="LightYellow"/>
-                </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                            <TextBlock Text="Entry:" />
+                            <TextBox Name="JournalEntryField" Text="{Binding SelectedJournal.Entry}"  IsEnabled="{Binding IsJournalEntrySelected}" 
+                                LostFocus="Journal_TextChanged"
+                                AcceptsReturn="True" AcceptsTab="True" TextWrapping="Wrap" 
+                                Width="250" MinHeight="150" MaxHeight="200"
+                                ScrollViewer.HorizontalScrollBarVisibility="Disabled" ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                Margin="22,0,0,0" Background="LightYellow"/>
+                        </StackPanel>
 
-                <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
-                    <TextBlock Text="Created:" Foreground="Gray" />
-                    <TextBlock Text="{Binding SelectedJournal.CreationDateTime, TargetNullValue='',StringFormat=\{0:ddd dd/MM HH:mm\}}" 
-                        Foreground="Gray" Margin="5,0,0,0"/>
-                    <TextBlock Text="{Binding SelectedJournal.TimeSinceCreationString, StringFormat='  ({0} ago)'}" Foreground="Gray" Margin="5,0,0,0"/>
-                </StackPanel>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Visibility="{Binding AddingWorkItemJournal, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <Button Name="CancelAddJournalButton" Command="{Binding CancelWorkItemJournalAddCommand}"
+                    Padding="5" Margin="5,5,5,0" Height="28" >
+                                <StackPanel Orientation="Horizontal" Margin="5,0,5,0">
+                                    <Image Source="../../Images/cancel.png" Width="26" />
+                                    <TextBlock Text="Cancel" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                            <Button Name="AddJournalButton"
+                    Padding="5" Margin="5,5,5,0" Height="28" >
+                                <StackPanel Orientation="Horizontal" Margin="5,0,5,0">
+                                    <Image Source="../../Images/journal_add.png" Width="26" />
+                                    <TextBlock Text="Save" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
 
-                <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
-                    <TextBlock Text="Modified:" Foreground="Gray" />
-                    <TextBlock Text="{Binding SelectedJournal.ModificationDateTime, TargetNullValue='',StringFormat=\{0:ddd dd/MM HH:mm\}}" 
-                        Foreground="Gray" Margin="5,0,0,0"/>
-                </StackPanel>
-            </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                            <TextBlock Text="Created:" Foreground="Gray" />
+                            <TextBlock Text="{Binding SelectedJournal.CreationDateTime, TargetNullValue='',StringFormat=\{0:ddd dd/MM HH:mm\}}" 
+                                Foreground="Gray" Margin="5,0,0,0"/>
+                            <TextBlock Text="{Binding SelectedJournal.TimeSinceCreationString, StringFormat='  ({0} ago)'}" Foreground="Gray" Margin="5,0,0,0"/>
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                            <TextBlock Text="Modified:" Foreground="Gray" />
+                            <TextBlock Text="{Binding SelectedJournal.ModificationDateTime, TargetNullValue='',StringFormat=\{0:ddd dd/MM HH:mm\}}" 
+                                Foreground="Gray" Margin="5,0,0,0"/>
+                        </StackPanel>
+                    </StackPanel>
+                </TabItem>
+  
+            </TabControl>
+            
 
         </Grid>
     </DockPanel>

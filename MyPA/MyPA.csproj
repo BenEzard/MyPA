@@ -103,7 +103,8 @@
     <Compile Include="Code\Data\Notifications\WorkItemCreatingNotification.cs" />
     <Compile Include="Code\Data\Notifications\WorkItemJournalCreatingNotification.cs" />
     <Compile Include="Code\Data\Notifications\WorkItemDeletingNotification.cs" />
-    <Compile Include="Code\Data\Notifications\WorkItemSelectedTabAction.cs" />
+    <Compile Include="Code\Data\Notifications\WorkItemJournalSelectTabAction.cs" />
+    <Compile Include="Code\Data\Notifications\WorkItemSelectTabAction.cs" />
     <Compile Include="Code\Data\Notifications\WorkItemSelectedNotification.cs" />
     <Compile Include="Code\Data\Models\BaseDBObject.cs" />
     <Compile Include="Code\Data\Models\BaseWorkItem.cs" />
@@ -130,10 +131,12 @@
     <Compile Include="Code\UI\DueDateDialog.xaml.cs">
       <DependentUpon>DueDateDialog.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Code\UI\JournalTabType.cs" />
     <Compile Include="Code\UI\JournalTabUserControl.xaml.cs">
       <DependentUpon>JournalTabUserControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="Code\UI\SplitSetting.cs" />
+    <Compile Include="Code\UI\UITab.cs" />
     <Compile Include="Code\UI\Util\InverseBooleanToVisibilityConverter.cs" />
     <Compile Include="Code\UI\Util\BooleanToVisibilityConverter.cs" />
     <Compile Include="Code\UI\Util\LessScrollbarWidthConverter.cs" />
@@ -213,6 +216,10 @@
     <Resource Include="Images\application_side_contract.png" />
     <Resource Include="Images\application_side_expand.png" />
     <Resource Include="Images\application_tile_horizontal.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\application_form.png" />
+    <Resource Include="Images\application_view_list.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
