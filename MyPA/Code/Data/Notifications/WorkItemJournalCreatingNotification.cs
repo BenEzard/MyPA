@@ -2,6 +2,8 @@
 {
     public class WorkItemJournalCreatingNotification : BaseNotification
     {
+        public bool GiveDetailTabProminence { get; set; }
+
         public WorkItemJournalCreatingNotification()
         {
         }

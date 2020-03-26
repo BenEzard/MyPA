@@ -37,6 +37,7 @@
         LAST_SELECTED_WORK_ITEM,
         LAST_SELECTED_WORK_ITEM_TAB,
 
+        JOURNAL_ON_CREATION_GIVE_PROMINENCE, /* Gives the 'Detail' tab prominence (hiding the Overview tab) on WorkItemJournal creation */
 
         /*JOURNAL_ORDERING,
         DELETE_OPTION,

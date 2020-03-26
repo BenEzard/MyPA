@@ -52,14 +52,21 @@ namespace MyPA.Code.UI
         {
             if (notification is WorkItemJournalCreatingNotification)
             {
+                // Ensure that the Journal tab is displayed on the WorkItemUserControl
                 Messenger.Default.Send(new WorkItemSelectTabAction(TAB_NAME));
-                MoveVerticalSplit(SplitSetting.RIGHT_EXPANDED);
+                
+                // If desired, move the vertical split.
+                if (((WorkItemJournalCreatingNotification)notification).GiveDetailTabProminence)
+                {
+                    MoveVerticalSplit(SplitSetting.RIGHT_EXPANDED);
+                }
+                
+                // Give the field focus
                 JournalTitleField.Focus();
             }
             else if (notification is MoveVerticalWorkItemJournalSplitNotification)
             {
-                var notificationDetails = (MoveVerticalWorkItemJournalSplitNotification)notification;
-                MoveVerticalSplit(notificationDetails.VerticalSplit);
+                MoveVerticalSplit(((MoveVerticalWorkItemJournalSplitNotification)notification).VerticalSplit);
             }
         }
 

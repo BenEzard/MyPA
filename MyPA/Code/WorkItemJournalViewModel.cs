@@ -1,4 +1,5 @@
 ﻿using MyPA.Code.Data.Actions;
+using MyPA.Code.Data.Models;
 using MyPA.Code.Data.Services;
 using MyPA.Code.UI;
 using MyPA.Code.UI.Util;
@@ -109,6 +110,11 @@ namespace MyPA.Code
             Messenger.Default.Register<WorkItemSelectedNotification>(this, OnWorkItemSelectedNotification);
             Messenger.Default.Register<WorkItemJournalCreatingNotification>(this, OnWorkItemJournalCreatingNotification);
             Messenger.Default.Register<WorkItemDeletingNotification>(this, OnWorkItemDeletingNotification);
+
+            WorkItem wi = ApplicationViewModel.Instance.SelectedWorkItem;
+            Console.WriteLine($"item from application is {wi.Title}");
+            OnWorkItemSelectedNotification(new WorkItemSelectedNotification(wi));
+            OnPropertyChanged("");
         }
 
         /// <summary>
@@ -146,19 +152,28 @@ namespace MyPA.Code
         /// Method is called when a 'WorkItemSelectedNotification' is received.
         /// </summary>
         /// <param name="notification"></param>
-        public void OnWorkItemSelectedNotification(WorkItemSelectedNotification notification)
+        private void OnWorkItemSelectedNotification(WorkItemSelectedNotification notification)
         {
+            Console.Write("in OnWorkItemSelectedNotification...");
             // If WorkItem has not been instantiated or saved yet, then don't try to do anything with the journals.
             if ((notification.WorkItem == null) || (notification.WorkItem.WorkItemID.HasValue == false) || (notification.WorkItem.WorkItemID.Value == -1))
+            {
+                Console.WriteLine("bailing, nothing is selected yet.");
                 return;
+            }
 
+//            Console.WriteLine("in OnWorkItemSelectedNotification");
             _workItemID = notification.WorkItem.WorkItemID.Value;
             WorkItemJournal = new ObservableCollection<WorkItemJournalEntry>(journalRepository.SelectWorkItemJournals(_workItemID));
             Console.WriteLine($"{WorkItemJournal.Count} journal entries loaded.");
             Messenger.Default.Send(new MoveVerticalWorkItemJournalSplitNotification(SplitSetting.EQUAL_SPLIT));
         }
 
-        public void OnWorkItemJournalCreatingNotification(WorkItemJournalCreatingNotification notification)
+        /// <summary>
+        /// This method is called when a WorkItemJournalCreatingNotification is received.
+        /// </summary>
+        /// <param name="notification"></param>
+        private void OnWorkItemJournalCreatingNotification(WorkItemJournalCreatingNotification notification)
         {
             WorkItemJournalCreating(); // This calls another method, so that both buttons result in going to the same logic.
         }
@@ -236,16 +251,19 @@ namespace MyPA.Code
         }
 
         /// <summary>
-        /// 
+        /// Start preparing the view and creating a WorkItemJournal
         /// </summary>
         /// <param name="notification"></param>
         public void WorkItemJournalCreating()
         {
+            // Select the 'Detail' Journal tab
             SelectedJournalTabIndex = GetJournalUITabIndex(JournalTabType.JOURNAL_DETAIL);
 
             // Notify the UI that a new WorkItemJournal is being created.
-            // This changes the visible tab and sets the vertical split, and the focus to the Journal Title textbox.
-            InvokeEvent(this, new WorkItemJournalCreatingNotification());
+            // This changes the visible tab, sets the focus to the Journal Title textbox and (potentially) sets the vertical split.
+            var notfication = new WorkItemJournalCreatingNotification();
+            notfication.GiveDetailTabProminence = GetAppPreferenceValueAsBool(PreferenceName.JOURNAL_ON_CREATION_GIVE_PROMINENCE);
+            InvokeEvent(this, notfication);
             
             SelectedJournal = new WorkItemJournalEntry(_workItemID);
 

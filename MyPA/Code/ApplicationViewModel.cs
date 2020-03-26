@@ -2,6 +2,7 @@
 using MyPA.Code.Data.Models;
 using MyPA.Code.Data.Services;
 using MyPA.Code.UI.Util;
+using System;
 using System.Windows.Input;
 
 namespace MyPA.Code
@@ -9,6 +10,24 @@ namespace MyPA.Code
     public class ApplicationViewModel : BaseViewModel
     {
         private IApplicationRepository applicationRepository = ApplicationRepository.Instance;
+        private static readonly ApplicationViewModel instance = new ApplicationViewModel();
+
+        static ApplicationViewModel() { }
+
+        public ApplicationViewModel() 
+        {
+            // Load Preferences
+            Preferences = applicationRepository.GetApplicationPreferences();
+            Messenger.Default.Register<WorkItemSelectedNotification>(this, OnWorkItemSelectedNotification);
+        }
+
+        public static ApplicationViewModel Instance 
+        { 
+            get
+            {
+                return instance;
+            }
+        }
 
         private WorkItem _selectedWorkItem = null;
         public WorkItem SelectedWorkItem
@@ -29,15 +48,10 @@ namespace MyPA.Code
             }
         }
 
-        public ApplicationViewModel()
-        {
-            // Load Preferences
-            Preferences = applicationRepository.GetApplicationPreferences();
-            Messenger.Default.Register<WorkItemSelectedNotification>(this, OnWorkItemSelectedNotification);
-        }
 
         public void OnWorkItemSelectedNotification(WorkItemSelectedNotification notification)
         {
+            Console.WriteLine($"WorkItemSelectedNotification caught in application {notification.WorkItem.Title}");
             SelectedWorkItem = notification.WorkItem;
         }
 
@@ -174,5 +188,6 @@ namespace MyPA.Code
 
             Messenger.Default.Send(new ApplicationClosingNotification());
         }
+
     }
 }

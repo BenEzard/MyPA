@@ -63,9 +63,13 @@ namespace MyPA.Code
             get => _selectedWorkItem;
             set
             {
+                Console.Write("in SelectedWorkItem...");
                 if (value == null)
+                {
+                    Console.WriteLine("bailing");
                     return;
-
+                }
+                Console.WriteLine("loading");
                 // Do any required updates on the previously selected WorkItem, before changing the selection.
                 UpdateWorkItem(_selectedWorkItem);
 
@@ -270,7 +274,7 @@ namespace MyPA.Code
         /// </summary>
         public WorkItemViewModel()
         {
-            ApplicationViewModel appViewModel = new ApplicationViewModel();
+            ApplicationViewModel appViewModel = ApplicationViewModel.Instance;
 
             // Load Preferences
             Preferences = workItemRepository.GetWorkItemPreferences();
@@ -281,15 +285,15 @@ namespace MyPA.Code
 
             LoadWorkItems();
 
-            if (GetAppPreferenceValueAsBool(PreferenceName.SAVE_SESSION_ON_EXIT))
-                RestoreSession();
-            else if (WorkItems.Count > 1)
-                SelectedWorkItem = WorkItems[1];
-
             // Setup the WorkItemView.
             _workItemOverview = new CollectionViewSource();
             _workItemOverview.Source = WorkItems;
-            _workItemOverview.Filter += WorkItemOverviewFilter;            
+            _workItemOverview.Filter += WorkItemOverviewFilter;
+
+            if (GetAppPreferenceValueAsBool(PreferenceName.SAVE_SESSION_ON_EXIT))
+                RestorePreviousSession();
+            else if (WorkItems.Count > 1)
+                SelectedWorkItem = WorkItems[1];
 
             OnPropertyChanged("");
         }
@@ -310,7 +314,6 @@ namespace MyPA.Code
             Messenger.Default.Register<WorkItemSelectTabAction>(this,
                 (WorkItemSelectTabAction action) =>
                 SelectedWorkItemTabIndex = GetUITabIndex(action.Name));
-
         }
 
         private void OnSaveApplicationClosing(ApplicationClosingNotification notification)
@@ -332,7 +335,7 @@ namespace MyPA.Code
         /// <summary>
         /// Restore the previous Session.
         /// </summary>
-        private void RestoreSession()
+        private void RestorePreviousSession()
         {
             SelectWorkItem(GetAppPreferenceValueAsInt(PreferenceName.LAST_SELECTED_WORK_ITEM));
             SelectedWorkItemTabIndex = GetAppPreferenceValueAsInt(PreferenceName.LAST_SELECTED_WORK_ITEM_TAB);

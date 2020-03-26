@@ -16,7 +16,7 @@ VALUES	/* Application Values - Non configurable */
 		/* Application Values - Configurable */
 		('APPLICATION_POSITION_LEFT', 'Application;', '100', '100', 'The window''s location (left)', 'Y'),
 		('APPLICATION_POSITION_TOP','Application;',  '0', '0', 'The window''s location (top)', 'Y'),
-		('APPLICATION_WIDTH', 'Application;', '600', '600', 'The window''s size (width)', 'Y'),
+		('APPLICATION_WIDTH', 'Application;', '760', '760', 'The window''s size (width)', 'Y'),
 		('APPLICATION_HEIGHT', 'Application;', '750', '750', 'The window''s size (height)', 'Y'),
 		('SAVE_WINDOW_COORDS_ON_EXIT', 'Application;', '1', '1', 'Should the window''s location and size be saved when the application exits?', 'Y'),
 		('LOGICAL_DELETE', 'Application;', '1', '1', 'Should all deletes be done logically?', 'Y'),
@@ -46,10 +46,11 @@ VALUES	/* Application Values - Non configurable */
 		('USE_OVERDUE_COLOURING', 'WorkItem;', 'Red', 'Red', 'Should a Due Date display in red when overdue?', 'Y'),
 
 		/* Work Item Status */
-		('STATUS_COMPLETE_TO_ACTIVE', 'WorkItem;', '75', '75', 'When a WorkItem is moved from complete-to-active, set the Completion percent.', 'Y');
+		('STATUS_COMPLETE_TO_ACTIVE', 'WorkItem;', '75', '75', 'When a WorkItem is moved from complete-to-active, set the Completion percent.', 'Y'),
 
 
 		/* Journals */
+		('JOURNAL_ON_CREATION_GIVE_PROMINENCE', 'WorkItemJournal;', '0', '1', 'Gives the Detail tab prominence (hiding the Overview tab) on WorkItemJournal creation', 'Y')
 		/*('CONFIRM_JOURNAL_DELETION', 'WorkItemJournal;', '1', '1', 'Should a Journal Entry deletion be confirmed?', 'Y'),
 		('JOURNAL_ORDERING', 'WorkItemJournal;', 'bottom', 'bottom', 'Should new Journal Entries appear at bottom or top of list?', 'Y'),
 
