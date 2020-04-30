@@ -112,8 +112,11 @@ namespace MyPA.Code
             Messenger.Default.Register<WorkItemDeletingNotification>(this, OnWorkItemDeletingNotification);
 
             WorkItem wi = ApplicationViewModel.Instance.SelectedWorkItem;
-            Console.WriteLine($"item from application is {wi.Title}");
-            OnWorkItemSelectedNotification(new WorkItemSelectedNotification(wi));
+            if (wi != null)
+            {
+                Console.WriteLine($"item from application is {wi.Title}");
+                OnWorkItemSelectedNotification(new WorkItemSelectedNotification(wi));
+            }
             OnPropertyChanged("");
         }
 

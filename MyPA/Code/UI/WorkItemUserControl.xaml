@@ -184,12 +184,12 @@
                         </DockPanel>
                     </TabItem>
                         <TabItem Name="TabTaskJournal" IsEnabled="{Binding IsSelectedWorkItemSaved}" Height="34" VerticalAlignment="Top" >
-                        <TabItem.Header>
-                            <Image Width="26" Source="../../Images/book_open.png"></Image>
-                        </TabItem.Header>
-                        <JournalTabControl:JournalTabUserControl />
-                    </TabItem>
-                </TabControl>
+                            <TabItem.Header>
+                                <Image Width="26" Source="../../Images/book_open.png"></Image>
+                            </TabItem.Header>
+                            <JournalTabControl:JournalTabUserControl />
+                        </TabItem>
+                    </TabControl>
 
                 <!-- Bottom row -->
                 <StackPanel Grid.Column="0" Grid.Row="2" Orientation="Horizontal"

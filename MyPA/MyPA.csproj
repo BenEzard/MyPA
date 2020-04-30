@@ -221,6 +221,12 @@
     <Resource Include="Images\application_form.png" />
     <Resource Include="Images\application_view_list.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\checklist.png" />
+    <Resource Include="Images\checklist_add.png" />
+    <Resource Include="Images\checklist_delete.png" />
+    <Resource Include="Images\checklist_edit.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

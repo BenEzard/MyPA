@@ -51,8 +51,11 @@ namespace MyPA.Code
 
         public void OnWorkItemSelectedNotification(WorkItemSelectedNotification notification)
         {
-            Console.WriteLine($"WorkItemSelectedNotification caught in application {notification.WorkItem.Title}");
-            SelectedWorkItem = notification.WorkItem;
+            if (notification.WorkItem != null)
+            {
+                Console.WriteLine($"WorkItemSelectedNotification caught in application {notification.WorkItem.Title}");
+                SelectedWorkItem = notification.WorkItem;
+            }
         }
 
         public string ApplicationNameAndVersion
