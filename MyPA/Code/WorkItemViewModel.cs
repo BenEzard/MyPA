@@ -432,8 +432,7 @@ namespace MyPA.Code
             int dueDateGracePeriod = GetAppPreferenceValueAsInt(PreferenceName.DUE_DATE_SET_WINDOW_SECONDS);
 
             // Check the length of time between this and the last DueDate change.
-            double secondsSinceChange = (wiDueDate.CreationDateTime.Value - _originalData.CreationDateTime.Value).TotalSeconds;
-            if (secondsSinceChange <= dueDateGracePeriod)
+            if ((_originalData.CreationDateTime.HasValue) && ((wiDueDate.CreationDateTime.Value - _originalData.CreationDateTime.Value).TotalSeconds <= dueDateGracePeriod))
             {
                 workItemRepository.UpdateWorkItemDueDate(wiDueDate);
             }
